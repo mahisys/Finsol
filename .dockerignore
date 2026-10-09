@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+*.db
+*.db-*
+media
+private-uploads
+data
+.env
+test-results
+playwright-report
