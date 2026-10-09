@@ -1,0 +1,991 @@
+<title>Finsol Loans</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: marketplace homepage (product picker hero → compare → calculate → apply) + one view per loan product, switched by #anchor */
+:root {
+  --bg: #f5f8f6;
+  --surface: #ffffff;
+  --surface-2: #eef4f1;
+  --ink: #0f1f1a;
+  --muted: #55665f;
+  --line: #dbe5e0;
+  --brand: #0b5b47;          /* ledger green */
+  --brand-strong: #084536;
+  --brand-soft: #e2efe9;
+  --on-brand: #ffffff;
+  --accent: #f2a31b;         /* marigold */
+  --on-accent: #1d1302;
+  --hero: #0b5b47;
+  --hero-2: #0e6b54;
+  --on-hero: #ffffff;
+  --on-hero-muted: rgba(255,255,255,.78);
+  --good: #18794e;
+  --warn: #b25d00;
+  --shadow: 0 18px 40px -22px rgba(9, 48, 38, .35);
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Figtree', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --r-sm: 8px;
+  --r: 14px;
+  --max: 1180px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1412; --surface: #121e1b; --surface-2: #172622; --ink: #e6efeb; --muted: #9db1a9; --line: #253631;
+    --brand: #43b893; --brand-strong: #5fd0aa; --brand-soft: #16302a; --on-brand: #04130e;
+    --accent: #f5b13a; --on-accent: #1d1302; --hero: #0f2c25; --hero-2: #12382f; --on-hero: #f1f7f4; --on-hero-muted: rgba(241,247,244,.75);
+    --good: #4cc38a; --warn: #f0a04b; --shadow: 0 18px 40px -22px rgba(0,0,0,.7); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1412; --surface: #121e1b; --surface-2: #172622; --ink: #e6efeb; --muted: #9db1a9; --line: #253631;
+  --brand: #43b893; --brand-strong: #5fd0aa; --brand-soft: #16302a; --on-brand: #04130e;
+  --accent: #f5b13a; --on-accent: #1d1302; --hero: #0f2c25; --hero-2: #12382f; --on-hero: #f1f7f4; --on-hero-muted: rgba(241,247,244,.75);
+  --good: #4cc38a; --warn: #f0a04b; --shadow: 0 18px 40px -22px rgba(0,0,0,.7); color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.12; margin: 0; text-wrap: balance; letter-spacing: -0.015em; }
+h1 { font-size: clamp(2.1rem, 4.6vw, 3.4rem); font-weight: 800; }
+h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 700; }
+h3 { font-size: 1.18rem; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--brand); }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: var(--max); margin: 0 auto; padding-inline: 20px; }
+.eyebrow { font-size: .76rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); }
+.muted { color: var(--muted); }
+.small { font-size: .86rem; }
+.tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: .74rem; font-weight: 700; background: var(--brand-soft); color: var(--brand-strong); }
+.tag--accent { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 2px solid transparent; border-radius: 10px; padding: .72em 1.25em; font-weight: 700; text-decoration: none; transition: transform .12s, background .12s, box-shadow .12s; white-space: nowrap; }
+.btn:hover { transform: translateY(-1px); }
+.btn--accent { background: var(--accent); color: var(--on-accent); }
+.btn--accent:hover { box-shadow: 0 10px 22px -10px var(--accent); }
+.btn--brand { background: var(--brand); color: var(--on-brand); }
+.btn--ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn--ghost-light { background: transparent; color: var(--on-hero); border-color: color-mix(in srgb, var(--on-hero) 45%, transparent); }
+.btn--block { width: 100%; }
+.btn--sm { padding: .5em .9em; font-size: .9rem; }
+
+/* ---------- header ---------- */
+.topbar { background: var(--surface-2); color: var(--muted); font-size: .82rem; }
+.topbar .wrap { display: flex; justify-content: space-between; gap: 12px; padding-block: 6px; flex-wrap: wrap; }
+.topbar b { color: var(--ink); }
+header.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+header.site .wrap { display: flex; align-items: center; gap: 22px; min-height: 68px; }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; }
+.logo__mark { width: 36px; height: 36px; border-radius: 10px; background: var(--brand); display: grid; place-items: center; color: var(--on-brand); }
+.nav { display: flex; gap: 2px; margin-left: 8px; }
+.nav a, .nav button { color: var(--ink); text-decoration: none; font-weight: 600; font-size: .95rem; padding: 9px 12px; border-radius: 8px; background: none; border: 0; }
+.nav a:hover, .nav button:hover { background: var(--surface-2); }
+.nav__loans { position: relative; }
+.mega { position: absolute; top: calc(100% + 6px); left: 0; width: min(560px, 90vw); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.mega a { display: flex; gap: 12px; align-items: flex-start; padding: 10px; border-radius: 10px; }
+.mega a small { display: block; color: var(--muted); font-weight: 500; }
+.header__right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.callus { display: flex; flex-direction: column; line-height: 1.15; font-size: .78rem; color: var(--muted); }
+.callus b { font-size: .95rem; color: var(--ink); user-select: all; }
+.burger { display: none; background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; color: var(--ink); }
+@media (max-width: 920px) {
+  .nav, .callus { display: none; }
+  .burger { display: inline-flex; }
+  .nav.is-open { display: flex; flex-direction: column; position: absolute; left: 0; right: 0; top: 100%; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px 16px 16px; margin: 0; }
+  .nav.is-open .mega { position: static; width: auto; box-shadow: none; grid-template-columns: 1fr; border: 0; padding: 0 0 0 8px; }
+}
+
+/* ---------- hero ---------- */
+.hero { background: radial-gradient(1200px 500px at 85% -10%, var(--hero-2), transparent 60%), var(--hero); color: var(--on-hero); padding-block: 48px 64px; position: relative; overflow: hidden; }
+.hero::after { content: '₹'; position: absolute; right: -40px; bottom: -150px; font-family: var(--font-display); font-weight: 800; font-size: 520px; line-height: 1; color: color-mix(in srgb, var(--on-hero) 5%, transparent); pointer-events: none; }
+.hero__grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 44px; align-items: center; position: relative; z-index: 1; }
+.hero p.lead { color: var(--on-hero-muted); font-size: 1.15rem; max-width: 46ch; margin-top: 14px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.picker { margin-top: 28px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.pick { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 12px; border-radius: 12px; border: 1.5px solid color-mix(in srgb, var(--on-hero) 22%, transparent); background: color-mix(in srgb, var(--on-hero) 6%, transparent); color: var(--on-hero); text-align: left; transition: background .15s, border-color .15s, transform .15s; min-width: 0; }
+.pick:hover { transform: translateY(-2px); border-color: var(--accent); }
+.pick[aria-pressed="true"] { background: var(--on-hero); color: var(--brand-strong); border-color: var(--on-hero); }
+:root[data-theme="dark"] .pick[aria-pressed="true"] { color: #0b5b47; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pick[aria-pressed="true"] { color: #0b5b47; } }
+.pick b { font-size: .92rem; line-height: 1.2; }
+.pick small { font-size: .74rem; opacity: .8; }
+.hero__cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; align-items: center; }
+.hero__trust { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 22px; font-size: .9rem; color: var(--on-hero-muted); }
+.hero__trust span { display: inline-flex; gap: 6px; align-items: center; }
+.hero__trust svg { color: var(--accent); }
+@media (max-width: 980px) { .hero__grid { grid-template-columns: 1fr; } .picker { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 520px) { .picker { grid-template-columns: repeat(2, 1fr); } }
+
+/* offer card (hero right) */
+.offer-card { background: var(--surface); color: var(--ink); border-radius: 18px; box-shadow: 0 40px 70px -30px rgba(0,0,0,.55); padding: 22px; display: grid; gap: 14px; }
+.offer-card__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.offer-card .amount { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; }
+.offer-card input[type=range] { width: 100%; accent-color: var(--brand); }
+.offer-rows { display: grid; gap: 8px; }
+.offer-row { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.offer-row .rate { font-weight: 800; font-size: 1.05rem; text-align: right; }
+.offer-row .rate small { display: block; color: var(--muted); font-weight: 500; font-size: .74rem; }
+.bank-dot { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: .85rem; color: #fff; }
+.note { font-size: .74rem; color: var(--muted); }
+
+/* ---------- sections ---------- */
+section.block { padding-block: clamp(48px, 7vw, 84px); }
+section.block--alt { background: var(--surface); border-block: 1px solid var(--line); }
+.sec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+.sec-head > div { display: grid; gap: 8px; max-width: 640px; }
+
+/* stats + lenders */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; margin-top: -36px; position: relative; z-index: 2; box-shadow: var(--shadow); }
+.stats div { background: var(--surface); padding: 18px 20px; display: grid; gap: 2px; }
+.stats b { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; }
+.stats span { color: var(--muted); font-size: .86rem; }
+@media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.lenders { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; align-items: center; }
+.lenders .lender { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-weight: 600; font-size: .9rem; }
+.lenders .lender .bank-dot { width: 26px; height: 26px; font-size: .68rem; border-radius: 50%; }
+
+/* product cards */
+.products { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 16px; }
+.pcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: var(--ink); transition: transform .15s, box-shadow .15s, border-color .15s; }
+.pcard:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
+.pcard__icon { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand); }
+.pcard dl { margin: 0; display: grid; gap: 6px; font-size: .88rem; }
+.pcard dl div { display: flex; justify-content: space-between; gap: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
+.pcard dt { color: var(--muted); }
+.pcard dd { margin: 0; font-weight: 700; text-align: right; }
+.pcard__go { margin-top: auto; font-weight: 700; color: var(--brand); display: inline-flex; gap: 6px; align-items: center; }
+
+/* compare table */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.tabs button { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); padding: 8px 14px; border-radius: 999px; font-weight: 600; font-size: .9rem; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+table.compare { width: 100%; border-collapse: collapse; min-width: 720px; }
+.compare th, .compare td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.compare th { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); font-weight: 700; }
+.compare tr:last-child td { border-bottom: 0; }
+.compare td.lender-cell { display: flex; gap: 12px; align-items: center; font-weight: 700; }
+.compare .rate { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; }
+.compare tr.best { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+
+/* calculator */
+.calc { display: grid; grid-template-columns: 1.25fr 1fr; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+.calc__in { padding: clamp(20px, 4vw, 36px); display: grid; gap: 26px; align-content: start; }
+.calc__out { padding: clamp(20px, 4vw, 36px); background: var(--surface-2); display: grid; gap: 16px; align-content: start; border-left: 1px solid var(--line); }
+@media (max-width: 860px) { .calc { grid-template-columns: 1fr; } .calc__out { border-left: 0; border-top: 1px solid var(--line); } }
+.range { display: grid; gap: 10px; }
+.range__top { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 600; }
+.range__val { display: flex; align-items: center; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); padding-inline: 10px; }
+.range__val input { width: 7.5em; border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 700; text-align: right; padding: 6px 0; font-variant-numeric: tabular-nums; }
+.range__val input:focus { outline: none; }
+.range__val:focus-within { border-color: var(--brand); }
+.range__val span { color: var(--muted); font-size: .85rem; }
+.range input[type=range] { width: 100%; accent-color: var(--brand); }
+.range__scale { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); }
+.calc__big { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 4vw, 2.7rem); letter-spacing: -0.02em; color: var(--brand); }
+.split { display: grid; grid-template-columns: 120px 1fr; gap: 18px; align-items: center; }
+.donut { width: 120px; aspect-ratio: 1; max-width: 100%; border-radius: 50%; -webkit-mask: radial-gradient(circle, transparent 54%, #000 55%); mask: radial-gradient(circle, transparent 54%, #000 55%); }
+.legend { display: grid; gap: 8px; font-size: .92rem; }
+.legend div { display: flex; justify-content: space-between; gap: 10px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 8px; }
+.calc-mode { display: inline-flex; border: 1.5px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+.calc-mode button { border: 0; background: none; color: var(--muted); font-weight: 600; padding: 6px 12px; border-radius: 7px; font-size: .88rem; }
+.calc-mode button[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); }
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: step; }
+.step { display: grid; gap: 8px; padding-top: 18px; border-top: 3px solid var(--line); position: relative; }
+.step::before { counter-increment: step; content: 'Step ' counter(step); font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--brand); }
+.step:first-child { border-top-color: var(--accent); }
+@media (max-width: 860px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .steps { grid-template-columns: 1fr; } }
+
+/* credit score banner */
+.score-band { display: grid; grid-template-columns: auto 1fr auto; gap: 28px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px 28px; }
+.gauge { width: 150px; max-width: 100%; }
+@media (max-width: 760px) { .score-band { grid-template-columns: 1fr; text-align: left; } }
+
+/* testimonials, faq */
+.quotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.quote { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; gap: 14px; align-content: start; }
+.quote blockquote { margin: 0; font-size: 1.02rem; }
+.quote footer { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .88rem; }
+.stars { color: var(--accent); letter-spacing: 2px; }
+.faq { display: grid; gap: 10px; max-width: 860px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 18px; }
+.faq summary { cursor: pointer; list-style: none; padding: 16px 0; font-weight: 700; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; color: var(--brand); font-size: 1.3rem; line-height: 1; }
+.faq details[open] summary::after { content: '−'; }
+.faq details p { padding-bottom: 16px; color: var(--muted); }
+
+/* cta strip */
+.cta { background: var(--hero); color: var(--on-hero); border-radius: 20px; padding: clamp(24px, 4vw, 40px); display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.cta p { color: var(--on-hero-muted); margin-top: 6px; }
+
+/* ---------- product view ---------- */
+.crumbs { font-size: .85rem; color: var(--on-hero-muted); display: flex; gap: 8px; flex-wrap: wrap; }
+.crumbs a { color: var(--on-hero); }
+.facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 26px; }
+.facts div { background: color-mix(in srgb, var(--on-hero) 9%, transparent); border: 1px solid color-mix(in srgb, var(--on-hero) 14%, transparent); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; min-width: 0; }
+.facts dt { font-size: .76rem; color: var(--on-hero-muted); }
+.facts dd { margin: 0; font-weight: 800; font-family: var(--font-display); font-size: 1.15rem; }
+@media (max-width: 640px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+.quick { background: var(--surface); color: var(--ink); border-radius: 18px; padding: 22px; box-shadow: 0 40px 70px -30px rgba(0,0,0,.55); display: grid; gap: 14px; }
+.field { display: grid; gap: 6px; font-weight: 600; font-size: .88rem; color: var(--ink); }
+.field input, .field select { font: inherit; font-weight: 500; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); width: 100%; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 20%, transparent); }
+.field .err { color: #c2410c; font-size: .8rem; font-weight: 600; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 460px) { .row2 { grid-template-columns: 1fr; } }
+.consent { display: flex; gap: 10px; font-size: .76rem; color: var(--muted); align-items: flex-start; }
+.consent input { margin-top: 3px; accent-color: var(--brand); }
+.ptabs { display: flex; gap: 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.ptabs button { background: none; border: 0; border-bottom: 3px solid transparent; padding: 12px 16px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.ptabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.ppanel { padding-top: 22px; }
+.ticks { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px 28px; }
+.ticks li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
+.ticks svg { color: var(--brand); margin-top: 2px; }
+.fees { width: 100%; border-collapse: collapse; }
+.fees td { padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.fees td:last-child { text-align: right; font-weight: 700; }
+.prod-layout { display: grid; grid-template-columns: 1fr 340px; gap: 36px; align-items: start; }
+.side-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 12px; position: sticky; top: 90px; }
+@media (max-width: 960px) { .prod-layout { grid-template-columns: 1fr; } .side-card { position: static; } }
+.elig-out { padding: 14px; border-radius: 12px; background: var(--brand-soft); display: grid; gap: 4px; }
+.elig-out b { font-family: var(--font-display); font-size: 1.6rem; color: var(--brand-strong); }
+
+/* ---------- apply flow ---------- */
+.sheet { position: fixed; inset: 0; z-index: 80; background: rgba(4, 18, 14, .55); display: grid; place-items: center; padding: 16px; }
+.sheet__panel { width: min(560px, 100%); max-height: calc(100% - 20px); overflow: auto; background: var(--surface); color: var(--ink); border-radius: 20px; box-shadow: 0 40px 80px -30px rgba(0,0,0,.6); }
+.sheet__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 22px 0; }
+.sheet__close { background: none; border: 0; color: var(--muted); padding: 6px; border-radius: 8px; }
+.progress { height: 6px; background: var(--surface-2); border-radius: 99px; margin: 14px 22px 0; overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .25s; }
+.sheet__body { padding: 20px 22px 24px; display: grid; gap: 16px; }
+.choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.choice { display: flex; gap: 12px; align-items: center; text-align: left; padding: 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font-weight: 600; }
+.choice:hover { border-color: var(--brand); }
+.choice[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); }
+.choice small { display: block; color: var(--muted); font-weight: 500; font-size: .78rem; }
+@media (max-width: 460px) { .choice-grid { grid-template-columns: 1fr; } }
+.big-amount { font-family: var(--font-display); font-size: 2.4rem; font-weight: 800; text-align: center; letter-spacing: -0.02em; }
+.sheet__nav { display: flex; gap: 10px; justify-content: space-between; }
+.otp { display: flex; gap: 8px; }
+.otp input { width: 48px; height: 54px; text-align: center; font-size: 1.3rem; font-weight: 700; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
+.result-head { text-align: center; display: grid; gap: 6px; justify-items: center; }
+.result-head .ok { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--good); color: #fff; }
+.match { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; }
+.match.top { border-color: var(--accent); }
+.match .btn { padding: .45em .8em; font-size: .85rem; }
+
+/* footer */
+footer.site { background: var(--surface); border-top: 1px solid var(--line); padding-block: 48px 28px; margin-top: 20px; font-size: .92rem; }
+.foot-grid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 32px; }
+.foot-grid h4 { font-size: .95rem; margin-bottom: 12px; }
+.foot-grid ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.foot-grid a { color: var(--muted); text-decoration: none; }
+.foot-grid a:hover { color: var(--brand); }
+.disclaimer { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; display: grid; gap: 8px; }
+@media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 460px) { .foot-grid { grid-template-columns: 1fr; } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.proto-flag { position: fixed; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--bg); font-size: .74rem; font-weight: 700; padding: 6px 10px; border-radius: 8px; opacity: .85; }
+.wa { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 54px; height: 54px; border-radius: 50%; background: #25d366; color: #fff; display: grid; place-items: center; box-shadow: 0 10px 24px rgba(0,0,0,.25); border: 0; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 600; z-index: 90; font-size: .9rem; max-width: calc(100% - 32px); }
+</style>
+
+<div class="topbar"><div class="wrap">
+  <span>Authorised loan partner (DSA) for 30+ banks &amp; NBFCs · <b>Our service is free for customers</b></span>
+  <span>Mon–Sat, 10 am – 7 pm · <b class="num">+91 98765 43210</b></span>
+</div></div>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="#home" aria-label="Finsol home">
+      <span class="logo__mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 20V5h12M6 12h9"/></svg></span>
+      Finsol
+    </a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <div class="nav__loans">
+        <button type="button" id="loansBtn" aria-expanded="false" aria-controls="mega">Loans ▾</button>
+        <div class="mega" id="mega" hidden></div>
+      </div>
+      <a href="#compare">Compare</a>
+      <a href="#calculators">Calculators</a>
+      <a href="#credit-score">Credit score</a>
+      <a href="#faqs">Help</a>
+    </nav>
+    <div class="header__right">
+      <div class="callus">Talk to an expert<b class="num">+91 98765 43210</b></div>
+      <button type="button" class="btn btn--accent btn--sm" data-apply>Check eligibility</button>
+      <button type="button" class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div style="display:grid;gap:12px;align-content:start">
+        <a class="logo" href="#home"><span class="logo__mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 20V5h12M6 12h9"/></svg></span>Finsol</a>
+        <p class="muted">We compare loan offers from banks and NBFCs, prepare your file and follow up until the money reaches your account.</p>
+        <p class="muted small">Office 101, Business Park, MG Road, Pune 411001<br><span class="num">hello@finsol.example</span></p>
+      </div>
+      <div><h4>Loans</h4><ul id="footLoans"></ul></div>
+      <div><h4>Tools</h4><ul>
+        <li><a href="#calculators">EMI calculator</a></li>
+        <li><a href="#calculators">Cash credit interest calculator</a></li>
+        <li><a href="#compare">Compare lenders</a></li>
+        <li><a href="#credit-score">Free credit score</a></li>
+      </ul></div>
+      <div><h4>Company</h4><ul>
+        <li><a href="#home">About us</a></li>
+        <li><a href="#faqs">FAQs</a></li>
+        <li><a href="#home">Partner with us (connectors)</a></li>
+        <li><a href="#home">Privacy policy</a></li>
+        <li><a href="#home">Grievance redressal</a></li>
+      </ul></div>
+    </div>
+    <div class="disclaimer">
+      <p><b>Disclaimer:</b> Finsol is a Direct Selling Agent (DSA) and loan facilitator. We do not lend money. Loans are sanctioned at the sole discretion of the partner bank or NBFC as per its credit policy. Rates, fees and offers shown are indicative and may change without notice.</p>
+      <p>Lender names on this prototype are placeholders. © 2026 Finsol. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<span class="proto-flag">Prototype · sample data</span>
+<button type="button" class="wa" aria-label="Chat on WhatsApp" data-toast="WhatsApp chat opens here on the live site">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a9 9 0 00-7.8 13.5L3 21l4.6-1.2A9 9 0 1012 3zm4.6 12.6c-.2.6-1.2 1.2-1.7 1.2s-1 .3-3.5-.8a8.6 8.6 0 01-3.3-3c-.5-.7-.8-1.5-.8-2.2s.3-1.4.9-1.9h.7l.6 1.4c.1.2 0 .5-.1.7l-.4.5c-.1.1-.2.3 0 .5a6 6 0 002.9 2.5c.2.1.4.1.5-.1l.6-.7c.2-.2.4-.2.6-.1l1.5.7c.2.1.4.2.4.4.1.2.1.5-.1.9z"/></svg>
+</button>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet__panel">
+    <div class="sheet__head">
+      <div><p class="eyebrow" id="sheetStep">Step 1 of 5</p><h3 id="sheetTitle">Check your loan offers</h3></div>
+      <button type="button" class="sheet__close" id="sheetClose" aria-label="Close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="progress"><i id="sheetProgress" style="width:20%"></i></div>
+    <div class="sheet__body" id="sheetBody"></div>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA (sample, indicative) ===================== */
+const ICONS = {
+  pl: '<path d="M3 7h18v12H3z"/><path d="M16 13h2M3 10h18"/>',
+  bl: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/>',
+  hl: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  lap: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M10 21v-4h4v4"/>',
+  cc: '<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/><path d="M14 6l2-2 2 2"/>',
+  check: '<path d="M5 12l4 4 10-10"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  doc: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
+};
+const icon = (name, size = 22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+
+const LENDERS = {
+  bnb: { name: 'Bharat National Bank', short: 'BN', color: '#1f5fa8' },
+  mcb: { name: 'Metro City Bank', short: 'MC', color: '#b3261e' },
+  sah: { name: 'Sahyadri Co-op Bank', short: 'SC', color: '#6b4fa0' },
+  uhf: { name: 'Unity Housing Finance', short: 'UH', color: '#0e7c6b' },
+  swf: { name: 'Swift Capital NBFC', short: 'SW', color: '#c45a00' },
+  pcf: { name: 'Prime Credit Finance', short: 'PC', color: '#2f6f2f' },
+  ksb: { name: 'Kaveri Small Finance Bank', short: 'KS', color: '#8a3b62' },
+};
+const bankDot = (id, cls = '') => { const l = LENDERS[id]; return `<span class="bank-dot ${cls}" style="background:${l.color}" aria-hidden="true">${l.short}</span>`; };
+
+const PRODUCTS = [
+  {
+    id: 'personal-loan', code: 'PL', icon: 'pl', name: 'Personal Loan',
+    tagline: 'Instant funds for weddings, travel, medical bills or anything else. No collateral.',
+    from: 10.49, facts: { 'Interest from': '10.49% p.a.', 'Loan amount': '₹50K – ₹40 Lakh', 'Tenure': '1 – 6 years', 'Disbursal': 'In 24–72 hrs' },
+    calc: { mode: 'emi', amount: 500000, min: 50000, max: 4000000, step: 10000, rate: 10.99, tenure: 5, maxTenure: 6 },
+    elig: { kind: 'foir', foir: 0.5, rate: 11, years: 5, label: 'Net monthly salary' },
+    features: ['No collateral or guarantor', 'Pre-approved offers for salaried customers', 'Part-prepayment allowed after 6–12 EMIs', 'Balance transfer + top-up of your existing loan', 'Minimal paperwork with digital KYC', 'Doorstep document pickup'],
+    eligibility: ['Age 21 – 60 years', 'Salaried with ₹20,000+ net monthly income', '1 year total work experience, 6 months in current job', 'CIBIL score 700+ preferred', 'Employed with a listed company, MNC, PSU or government'],
+    documents: ['PAN card and Aadhaar', 'Last 3 months salary slips', 'Last 6 months salary account statement', 'Form 16 (for higher amounts)', 'Passport size photograph'],
+    fees: [['Processing fee', 'Up to 2% + GST'], ['Part-prepayment', 'Nil – 4%'], ['Foreclosure', 'Nil – 5%'], ['Late payment', '2% per month on overdue'], ['Stamp duty', 'As per state']],
+    offers: [['bnb', 10.49, '1.5%', '₹40 L', '6 yrs'], ['mcb', 10.75, '1.25%', '₹35 L', '6 yrs'], ['ksb', 11.25, '2%', '₹25 L', '5 yrs'], ['swf', 12.5, '2.5%', '₹15 L', '5 yrs'], ['pcf', 13.99, '3%', '₹10 L', '4 yrs']],
+    faqs: [['Can I get a personal loan without salary slips?', 'Some lenders accept bank statements and Form 16 instead. Self-employed applicants can apply with ITRs. Share your details and we will match you with the right lender.'], ['How much personal loan can I get on a ₹50,000 salary?', 'Lenders usually keep total EMIs within 50–60% of net income. With no other EMIs, a ₹50,000 salary can support roughly ₹10–11 lakh over 5 years at around 11%.']],
+  },
+  {
+    id: 'business-loan', code: 'BL', icon: 'bl', name: 'Business Loan',
+    tagline: 'Unsecured term loans for MSMEs, traders, manufacturers and professionals.',
+    from: 14, facts: { 'Interest from': '14% p.a.', 'Loan amount': '₹3 Lakh – ₹75 Lakh', 'Tenure': '1 – 5 years', 'Collateral': 'Not required' },
+    calc: { mode: 'emi', amount: 1500000, min: 300000, max: 7500000, step: 50000, rate: 15.5, tenure: 3, maxTenure: 5 },
+    elig: { kind: 'turnover', pct: 0.15, label: 'Annual turnover (₹)', hint: 'Unsecured limits are usually 10–20% of annual turnover, subject to banking and ITR.' },
+    features: ['No property or collateral needed', 'Use for expansion, machinery, inventory or marketing', 'GST-based and banking-based programmes', 'Doctors, CAs and architects get special schemes', 'Top-up after 12 EMIs', 'Approval within 3–5 working days'],
+    eligibility: ['Business vintage of 3+ years', 'Annual turnover above ₹40 lakh', 'Profitable in the last 2 years (ITR)', 'Applicant age 23 – 65 years', 'Healthy bank balance and no cheque bounces'],
+    documents: ['KYC of applicant and business (PAN, Aadhaar, GST / Udyam certificate)', 'Last 2 years ITR with computation, P&L and balance sheet', 'Last 12 months current account statement', 'GST returns for the last 12 months', 'Business address proof'],
+    fees: [['Processing fee', '1.5% – 3% + GST'], ['Foreclosure', '2% – 5%'], ['Bounce charges', '₹500 – ₹750 per instance'], ['Documentation', '₹1,000 – ₹2,500']],
+    offers: [['bnb', 14.0, '2%', '₹75 L', '5 yrs'], ['ksb', 15.5, '2%', '₹50 L', '4 yrs'], ['swf', 16.0, '2.5%', '₹50 L', '4 yrs'], ['pcf', 17.5, '3%', '₹30 L', '3 yrs'], ['mcb', 15.0, '1.75%', '₹40 L', '5 yrs']],
+    faqs: [['Can a new business get a business loan?', 'Most lenders need at least 2–3 years of business history. Newer businesses can look at loans against property or government schemes such as Mudra and CGTMSE-backed loans.'], ['Is GST registration mandatory?', 'Not always, but GST returns make approval faster and help you get a higher amount.']],
+  },
+  {
+    id: 'home-loan', code: 'HL', icon: 'hl', name: 'Home Loan',
+    tagline: 'Buy, build or renovate your home with long tenures and low rates.',
+    from: 8.35, facts: { 'Interest from': '8.35% p.a.', 'Loan amount': 'Up to ₹10 Crore', 'Tenure': 'Up to 30 years', 'Funding': 'Up to 90% of value' },
+    calc: { mode: 'emi', amount: 3000000, min: 500000, max: 50000000, step: 100000, rate: 8.5, tenure: 20, maxTenure: 30 },
+    elig: { kind: 'foir', foir: 0.55, rate: 8.6, years: 20, label: 'Net monthly income' },
+    features: ['Up to 90% funding for loans up to ₹30 lakh (RBI LTV norms)', 'Tax benefit on principal (Sec 80C) and interest (Sec 24b)', 'Balance transfer from your current lender with a top-up', 'No foreclosure charges on floating-rate loans', 'Approved projects for faster processing', 'Legal and technical verification coordinated by us'],
+    eligibility: ['Age 21 – 65 years (at loan maturity, up to 70 for some lenders)', 'Salaried or self-employed with stable income', 'CIBIL score 700+ for the best rates', 'Co-applicant income can be added to increase eligibility', 'Property with a clear and marketable title'],
+    documents: ['KYC of all applicants', 'Salary slips and Form 16, or 2–3 years ITR for self-employed', '6 months bank statement', 'Agreement for sale / allotment letter', 'Property chain documents and approved plan'],
+    fees: [['Processing fee', '0.25% – 0.5% + GST'], ['Foreclosure (floating)', 'Nil'], ['Legal & technical', '₹5,000 – ₹15,000'], ['Stamp duty & registration', 'As per state'], ['CERSAI', '₹50 – ₹100']],
+    offers: [['uhf', 8.35, '0.25%', '₹10 Cr', '30 yrs'], ['bnb', 8.40, '0.35%', '₹10 Cr', '30 yrs'], ['mcb', 8.60, '0.5%', '₹7.5 Cr', '30 yrs'], ['sah', 8.75, '0.3%', '₹3 Cr', '25 yrs'], ['ksb', 9.25, '0.5%', '₹2 Cr', '25 yrs']],
+    faqs: [['How much home loan can I get?', 'Banks fund up to 75–90% of the property value depending on the loan amount, and keep your EMIs within about 50–60% of income. Use the eligibility check on this page for an estimate.'], ['Should I choose a fixed or floating rate?', 'Most home loans in India are floating and linked to the repo rate (EBLR). Floating loans have no foreclosure charges for individuals.']],
+  },
+  {
+    id: 'loan-against-property', code: 'LAP', icon: 'lap', name: 'Loan Against Property',
+    tagline: 'Unlock funds from your residential or commercial property at home-loan-like rates.',
+    from: 9.25, facts: { 'Interest from': '9.25% p.a.', 'Loan amount': 'Up to ₹5 Crore', 'Tenure': 'Up to 15 years', 'Funding': '60–70% of market value' },
+    calc: { mode: 'emi', amount: 5000000, min: 1000000, max: 50000000, step: 100000, rate: 9.75, tenure: 10, maxTenure: 15 },
+    elig: { kind: 'ltv', ltv: 0.65, label: 'Market value of property (₹)', hint: 'Residential property: up to 65–70%. Commercial: 50–60%. Final amount also depends on income.' },
+    features: ['Residential, commercial and industrial property accepted', 'Lower EMIs than a business or personal loan', 'Use for business, education, wedding or debt consolidation', 'Overdraft (dropline) option available', 'Balance transfer with top-up', 'Lease rental discounting for rented commercial property'],
+    eligibility: ['Self-owned property with a clear title', 'Salaried or self-employed with income proof', 'Applicant age 25 – 70 years at maturity', 'All property owners join as co-applicants'],
+    documents: ['KYC of all applicants', 'ITR with financials (2–3 years) or salary slips', '12 months bank statements', 'Complete property chain documents', 'Approved building plan and latest tax receipt'],
+    fees: [['Processing fee', 'Up to 1% + GST'], ['Valuation & legal', '₹5,000 – ₹20,000'], ['Foreclosure (individual, floating)', 'Nil'], ['Foreclosure (business)', 'Up to 4%']],
+    offers: [['bnb', 9.25, '0.75%', '₹5 Cr', '15 yrs'], ['uhf', 9.50, '1%', '₹3 Cr', '15 yrs'], ['mcb', 9.65, '0.75%', '₹5 Cr', '15 yrs'], ['sah', 10.25, '0.5%', '₹1.5 Cr', '12 yrs'], ['pcf', 11.50, '1.5%', '₹2 Cr', '12 yrs']],
+    faqs: [['Can I get LAP on a property in my parents\' name?', 'Yes. The property owners must join the loan as co-applicants.'], ['Is LAP cheaper than a business loan?', 'Usually yes. Because it is secured, LAP rates are typically 4–7% lower than unsecured business loans, with longer tenures.']],
+  },
+  {
+    id: 'cash-credit', code: 'CC', icon: 'cc', name: 'Cash Credit',
+    tagline: 'A working-capital limit for stock and receivables. Pay interest only on what you use.',
+    from: 9.5, facts: { 'Interest from': '9.5% p.a.', 'Limit': '₹10 Lakh – ₹10 Crore', 'Validity': '12 months, renewable', 'Interest on': 'Utilised amount only' },
+    calc: { mode: 'cc', limit: 5000000, min: 1000000, max: 100000000, step: 100000, util: 60, rate: 10.5 },
+    elig: { kind: 'turnover', pct: 0.2, label: 'Projected annual turnover (₹)', hint: 'For MSMEs up to ₹5 crore turnover, banks commonly assess the limit at 20% of projected turnover (Nayak Committee method).' },
+    features: ['Revolving limit: withdraw and repay any number of times', 'Interest charged only on the amount used, calculated daily', 'Drawing power linked to stock and debtors (monthly stock statement)', 'Secured by hypothecation of stock and book debts, plus property / FD where required', 'Renewed every year on review of financials', 'Can be combined with a term loan or LAP'],
+    eligibility: ['Business vintage of 2–3 years', 'GST-registered business with regular turnover', 'Audited financials for the last 2–3 years', 'Collateral as per lender policy (property, FD or CGTMSE cover)', 'Satisfactory bank conduct and CIBIL / CMR score'],
+    documents: ['KYC of business and promoters', 'Audited balance sheet and P&L (3 years) + provisional current year', 'Projections for next year (CMA data)', 'GST returns and 12 months bank statements', 'Latest stock & debtors statement', 'Collateral property documents'],
+    fees: [['Processing fee', '0.5% – 1% of limit + GST'], ['Annual renewal', '0.25% – 0.5% of limit'], ['Stock audit', 'As per bank, for larger limits'], ['Commitment charge', 'Some banks on unused limit'], ['Penal interest', '1–2% on overdrawn amount']],
+    offers: [['bnb', 9.50, '0.5%', '₹10 Cr', '12 mo'], ['mcb', 9.85, '0.75%', '₹10 Cr', '12 mo'], ['sah', 10.25, '0.5%', '₹3 Cr', '12 mo'], ['ksb', 11.0, '1%', '₹2 Cr', '12 mo']],
+    faqs: [['What is drawing power?', 'Drawing power (DP) is how much of your sanctioned limit you can actually use in a month. Banks calculate it from your stock and debtors, minus a margin of usually 25%, based on the monthly stock statement you submit.'], ['How is cash credit different from an overdraft?', 'Cash credit is secured by stock and receivables and its drawing power changes every month. An overdraft is usually against property, FDs or salary and has a fixed or reducing limit.']],
+  },
+];
+const P = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
+
+const GENERAL_FAQS = [
+  ['Do I pay Finsol anything?', 'No. Our service is free for customers. Partner banks pay us for sourcing and processing files. Any processing fee is the bank\'s own charge, paid directly to the bank.'],
+  ['Will checking offers affect my credit score?', 'No. Checking indicative offers uses a soft enquiry. A hard enquiry happens only when your file is logged with a lender you choose.'],
+  ['How long does the process take?', 'Personal loans: 1–3 days. Business loans: 3–7 days. Home loans and LAP: 7–15 days, including property verification. Cash credit: 2–4 weeks, including assessment.'],
+  ['Which lenders do you work with?', 'We work with 30+ public and private banks, small finance banks, housing finance companies and NBFCs, and recommend the ones where your profile has the best chance of approval.'],
+  ['Is my data safe?', 'Your documents are shared only with the lenders you choose to apply with, and stored securely.'],
+];
+
+/* ===================== HELPERS ===================== */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+const lakhs = (n) => n >= 1e7 ? `₹${+(n / 1e7).toFixed(2)} Cr` : n >= 1e5 ? `₹${+(n / 1e5).toFixed(2)} L` : inr(n);
+const emi = (P0, ratePa, years) => { const n = years * 12, r = ratePa / 1200; return r === 0 ? P0 / n : (P0 * r * (1 + r) ** n) / ((1 + r) ** n - 1); };
+const principalFor = (emiAmt, ratePa, years) => { const n = years * 12, r = ratePa / 1200; return (emiAmt * ((1 + r) ** n - 1)) / (r * (1 + r) ** n); };
+let toastTimer;
+const toast = (msg) => { $('.toast')?.remove(); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.append(t); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 2600); };
+const ticks = (items) => `<ul class="ticks">${items.map((t) => `<li>${icon('check', 20)}<span>${t}</span></li>`).join('')}</ul>`;
+const faqList = (faqs) => `<div class="faq">${faqs.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</div>`;
+
+/* ===================== NAV ===================== */
+$('#mega').innerHTML = PRODUCTS.map((p) => `<a href="#${p.id}"><span class="pcard__icon" style="width:38px;height:38px">${icon(p.icon, 20)}</span><span><b>${p.name}</b><small>From ${p.from}% p.a.</small></span></a>`).join('');
+$('#footLoans').innerHTML = PRODUCTS.map((p) => `<li><a href="#${p.id}">${p.name} (${p.code})</a></li>`).join('');
+const loansBtn = $('#loansBtn');
+const setMega = (open) => { $('#mega').hidden = !open; loansBtn.setAttribute('aria-expanded', open); };
+loansBtn.addEventListener('click', (e) => { e.stopPropagation(); setMega($('#mega').hidden); });
+document.addEventListener('click', (e) => { if (!e.target.closest('.nav__loans')) setMega(false); });
+$('#burger').addEventListener('click', () => { const open = !$('#nav').classList.contains('is-open'); $('#nav').classList.toggle('is-open', open); $('#burger').setAttribute('aria-expanded', open); });
+$('#nav').addEventListener('click', (e) => { if (e.target.closest('a')) { $('#nav').classList.remove('is-open'); setMega(false); } });
+
+/* ===================== CALCULATOR ===================== */
+function rangeInput(id, label, val, min, max, step, unit, fmt) {
+  return `<div class="range">
+    <div class="range__top"><label for="${id}">${label}</label>
+      <span class="range__val">${unit === '₹' ? '<span>₹</span>' : ''}<input id="${id}-n" type="number" inputmode="decimal" value="${val}" min="${min}" max="${max}" step="${step}" aria-label="${label}">${unit !== '₹' ? `<span>&nbsp;${unit}</span>` : ''}</span></div>
+    <input id="${id}" type="range" value="${val}" min="${min}" max="${max}" step="${step}">
+    <div class="range__scale num"><span>${fmt(min)}</span><span>${fmt(max)}</span></div>
+  </div>`;
+}
+function bindRange(root, id, onChange) {
+  const r = $('#' + id, root), n = $('#' + id + '-n', root);
+  r.addEventListener('input', () => { n.value = r.value; onChange(); });
+  n.addEventListener('input', () => { const v = Math.min(+r.max, Math.max(+r.min, +n.value || +r.min)); r.value = v; onChange(); });
+  n.addEventListener('blur', () => { n.value = r.value; });
+  return () => +r.value;
+}
+
+function renderCalculator(host, product, { switcher = false } = {}) {
+  const c = product.calc;
+  const switchHtml = switcher ? `<div class="calc-mode" role="group" aria-label="Choose loan">${PRODUCTS.map((p) => `<button type="button" data-calc="${p.id}" aria-pressed="${p.id === product.id}">${p.code}</button>`).join('')}</div>` : '';
+  const yrs = (v) => `${v} yr`;
+  if (c.mode === 'emi') {
+    host.innerHTML = `<div class="calc">
+      <div class="calc__in">
+        ${switchHtml}
+        ${rangeInput('cAmt', 'Loan amount', c.amount, c.min, c.max, c.step, '₹', lakhs)}
+        ${rangeInput('cRate', 'Interest rate', c.rate, 7, 24, 0.05, '% p.a.', (v) => v + '%')}
+        ${rangeInput('cTen', 'Tenure', c.tenure, 1, c.maxTenure, 1, 'years', yrs)}
+      </div>
+      <div class="calc__out">
+        <p class="muted">Monthly EMI · ${product.name}</p>
+        <p class="calc__big num" id="cEmi">–</p>
+        <div class="split"><div class="donut" id="cDonut"></div>
+          <div class="legend num">
+            <div><span><i style="background:var(--brand)"></i>Principal</span><b id="cP">–</b></div>
+            <div><span><i style="background:var(--accent)"></i>Interest</span><b id="cI">–</b></div>
+            <div><span>Total payable</span><b id="cT">–</b></div>
+          </div></div>
+        <button type="button" class="btn btn--accent btn--block" data-apply="${product.id}">Get offers at this EMI</button>
+        <p class="note">Indicative. Actual rate depends on your profile and the lender.</p>
+      </div></div>`;
+    const update = () => {
+      const A = gA(), R = gR(), T = gT(), m = emi(A, R, T), tot = m * T * 12, pct = (A / tot) * 100;
+      $('#cEmi', host).textContent = inr(m); $('#cP', host).textContent = inr(A); $('#cI', host).textContent = inr(tot - A); $('#cT', host).textContent = inr(tot);
+      $('#cDonut', host).style.background = `conic-gradient(var(--brand) 0 ${pct}%, var(--accent) ${pct}% 100%)`;
+    };
+    const gA = bindRange(host, 'cAmt', update), gR = bindRange(host, 'cRate', update), gT = bindRange(host, 'cTen', update);
+    update();
+  } else {
+    host.innerHTML = `<div class="calc">
+      <div class="calc__in">
+        ${switchHtml}
+        ${rangeInput('cLim', 'Sanctioned limit', c.limit, c.min, c.max, c.step, '₹', lakhs)}
+        ${rangeInput('cUtil', 'Average utilisation', c.util, 10, 100, 5, '%', (v) => v + '%')}
+        ${rangeInput('cRate', 'Interest rate', c.rate, 8, 18, 0.05, '% p.a.', (v) => v + '%')}
+      </div>
+      <div class="calc__out">
+        <p class="muted">Monthly interest · Cash Credit</p>
+        <p class="calc__big num" id="cMon">–</p>
+        <div class="split"><div class="donut" id="cDonut"></div>
+          <div class="legend num">
+            <div><span><i style="background:var(--brand)"></i>Avg. amount used</span><b id="cUsed">–</b></div>
+            <div><span><i style="background:var(--accent)"></i>Unused (no interest)</span><b id="cFree">–</b></div>
+            <div><span>Interest per year</span><b id="cYear">–</b></div>
+          </div></div>
+        <p class="small muted" id="cSave"></p>
+        <button type="button" class="btn btn--accent btn--block" data-apply="cash-credit">Apply for a CC limit</button>
+        <p class="note">Interest is calculated daily on the outstanding balance. Renewal and processing fees are extra.</p>
+      </div></div>`;
+    const update = () => {
+      const L = gL(), U = gU() / 100, R = gR(), used = L * U, yr = used * R / 100;
+      $('#cMon', host).textContent = inr(yr / 12); $('#cUsed', host).textContent = lakhs(used); $('#cFree', host).textContent = lakhs(L - used); $('#cYear', host).textContent = inr(yr);
+      $('#cSave', host).textContent = `A term loan of the same ${lakhs(L)} would cost about ${inr(L * R / 100)} a year in interest. With cash credit you save about ${inr(L * R / 100 - yr)} by paying only on what you use.`;
+      $('#cDonut', host).style.background = `conic-gradient(var(--brand) 0 ${U * 100}%, var(--accent) ${U * 100}% 100%)`;
+    };
+    const gL = bindRange(host, 'cLim', update), gU = bindRange(host, 'cUtil', update), gR = bindRange(host, 'cRate', update);
+    update();
+  }
+  if (switcher) $$('[data-calc]', host).forEach((b) => b.addEventListener('click', () => renderCalculator(host, P[b.dataset.calc], { switcher: true })));
+}
+
+/* ===================== COMPARE TABLE ===================== */
+function compareTable(product) {
+  const rows = [...product.offers].sort((a, b) => a[1] - b[1]);
+  const isCC = product.id === 'cash-credit';
+  return `<div class="table-wrap"><table class="compare">
+    <thead><tr><th scope="col">Lender</th><th scope="col">Interest from</th><th scope="col">Processing fee</th><th scope="col">${isCC ? 'Max limit' : 'Max amount'}</th><th scope="col">${isCC ? 'Validity' : 'Max tenure'}</th><th scope="col"><span class="sr">Action</span></th></tr></thead>
+    <tbody>${rows.map(([id, rate, fee, max, ten], i) => `<tr class="${i === 0 ? 'best' : ''}">
+      <td class="lender-cell">${bankDot(id)}<span>${LENDERS[id].name}${i === 0 ? '<br><span class="tag tag--accent">Lowest rate</span>' : ''}</span></td>
+      <td class="rate num">${rate.toFixed(2)}%</td><td class="num">${fee}</td><td class="num">${max}</td><td class="num">${ten}</td>
+      <td><button type="button" class="btn btn--ghost btn--sm" data-apply="${product.id}">Check offer</button></td></tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+/* ===================== VIEWS ===================== */
+let heroPick = 'personal-loan';
+function homeView() {
+  const p = P[heroPick];
+  return `
+  <section class="hero"><div class="wrap hero__grid">
+    <div>
+      <span class="tag tag--accent">Free, unbiased loan advice</span>
+      <h1 style="margin-top:16px">Compare loan offers from <em>30+ banks</em> in one application.</h1>
+      <p class="lead">Personal, business, home loans, LAP and cash credit. We check your eligibility, pick the right lenders and follow up until disbursal.</p>
+      <div class="picker" role="group" aria-label="What do you need?">
+        ${PRODUCTS.map((x) => `<button type="button" class="pick" data-pick="${x.id}" aria-pressed="${x.id === heroPick}">${icon(x.icon, 22)}<span><b>${x.name}</b><br><small>From ${x.from}%</small></span></button>`).join('')}
+      </div>
+      <div class="hero__cta">
+        <button type="button" class="btn btn--accent" data-apply="${heroPick}" id="heroApply">Check ${p.name} offers ${icon('arrow', 18)}</button>
+        <a class="btn btn--ghost-light" href="#calculators">EMI calculator</a>
+      </div>
+      <div class="hero__trust">
+        <span>${icon('check', 18)} No impact on credit score</span><span>${icon('check', 18)} Doorstep document pickup</span><span>${icon('check', 18)} Zero service charges</span>
+      </div>
+    </div>
+    <div class="offer-card" id="offerCard"></div>
+  </div></section>
+
+  <div class="wrap"><div class="stats num">
+    <div><b>₹500 Cr+</b><span>Loans disbursed</span></div>
+    <div><b>12,000+</b><span>Customers served</span></div>
+    <div><b>30+</b><span>Banks &amp; NBFCs</span></div>
+    <div><b>4.8 / 5</b><span>Google rating</span></div>
+  </div>
+  <div class="lenders" aria-label="Lending partners"><span class="muted small" style="margin-right:6px">Our lending partners</span>${Object.keys(LENDERS).map((id) => `<span class="lender">${bankDot(id)}${LENDERS[id].name}</span>`).join('')}</div>
+  </div>
+
+  <section class="block"><div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Our loan products</p><h2>One partner for personal and business finance</h2></div>
+      <a class="btn btn--ghost" href="#compare">Compare rates</a></div>
+    <div class="products">
+      ${PRODUCTS.map((x) => `<a class="pcard" href="#${x.id}">
+        <span class="pcard__icon">${icon(x.icon, 24)}</span>
+        <div style="display:grid;gap:4px"><span class="tag" style="justify-self:start">${x.code}</span><h3>${x.name}</h3></div>
+        <p class="muted small">${x.tagline}</p>
+        <dl class="num">${Object.entries(x.facts).slice(0, 3).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+        <span class="pcard__go">View details ${icon('arrow', 16)}</span></a>`).join('')}
+    </div>
+  </div></section>
+
+  <section class="block block--alt" id="compare"><div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Compare</p><h2>Today's indicative rates by lender</h2><p class="muted">Sorted by lowest rate. Your actual offer depends on income, credit score and the lender's policy.</p></div></div>
+    <div class="tabs" role="tablist" aria-label="Loan type">${PRODUCTS.map((x, i) => `<button type="button" role="tab" data-cmp="${x.id}" aria-selected="${i === 0}">${x.name}</button>`).join('')}</div>
+    <div id="cmpTable">${compareTable(PRODUCTS[0])}</div>
+  </div></section>
+
+  <section class="block" id="calculators"><div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Calculators</p><h2>Know your EMI before you apply</h2><p class="muted">Switch to CC to see how cash credit interest works on the amount you actually use.</p></div></div>
+    <div id="homeCalc"></div>
+  </div></section>
+
+  <section class="block block--alt"><div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">How it works</p><h2>From enquiry to disbursal, we handle the running around</h2></div></div>
+    <div class="steps">
+      <div class="step"><h3>Share your need</h3><p class="muted">Two-minute form or a call. Tell us the loan type, amount and income.</p></div>
+      <div class="step"><h3>Get matched</h3><p class="muted">We check eligibility across 30+ lenders and shortlist where approval is likely.</p></div>
+      <div class="step"><h3>Submit documents</h3><p class="muted">Doorstep or WhatsApp pickup. We prepare and log a complete file.</p></div>
+      <div class="step"><h3>Sanction &amp; disbursal</h3><p class="muted">Your relationship manager follows up with the bank until the money is credited.</p></div>
+    </div>
+  </div></section>
+
+  <section class="block" id="credit-score"><div class="wrap">
+    <div class="score-band">
+      <svg class="gauge" viewBox="0 0 160 96" role="img" aria-label="Credit score gauge showing 768 out of 900">
+        <path d="M14 86a66 66 0 01132 0" fill="none" stroke="var(--surface-2)" stroke-width="14" stroke-linecap="round"/>
+        <path d="M14 86a66 66 0 01132 0" fill="none" stroke="var(--brand)" stroke-width="14" stroke-linecap="round" stroke-dasharray="207" stroke-dashoffset="44"/>
+        <text x="80" y="74" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="30" fill="var(--ink)">768</text>
+        <text x="80" y="92" text-anchor="middle" font-size="10" fill="var(--muted)">out of 900</text>
+      </svg>
+      <div style="display:grid;gap:6px"><p class="eyebrow">Free credit check</p><h3 style="font-size:1.5rem">Your CIBIL score decides your rate</h3><p class="muted">750+ usually gets the lowest rates. Check your score for free and we'll tell you which lenders will say yes.</p></div>
+      <button type="button" class="btn btn--brand" data-toast="Credit score check connects to a bureau partner on the live site">Check score free</button>
+    </div>
+  </div></section>
+
+  <section class="block block--alt"><div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Customer stories</p><h2>Loans that closed, in their words</h2></div></div>
+    <div class="quotes">
+      ${[['Sneha K.', 'Home Loan · Pune', 'My own bank quoted 9.1%. Finsol got me 8.4% from another lender and handled the legal checks. The builder payment went through on time.'],
+         ['Imran S.', 'Cash Credit · Nashik', 'They prepared our CMA data and got a ₹60 lakh CC limit for our distribution business. We only pay interest on what we draw.'],
+         ['Priya N.', 'Personal Loan · Mumbai', 'Needed money for a medical emergency. Applied in the evening, the amount was in my account in two days.']]
+        .map(([n, t, q]) => `<figure class="quote"><span class="stars" aria-label="5 out of 5">★★★★★</span><blockquote>${q}</blockquote><footer><b>${n}</b><span class="muted">${t}</span></footer></figure>`).join('')}
+    </div>
+  </div></section>
+
+  <section class="block" id="faqs"><div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Help</p><h2>Frequently asked questions</h2></div></div>
+    ${faqList(GENERAL_FAQS)}
+  </div></section>
+
+  <section class="block" style="padding-top:0"><div class="wrap">
+    <div class="cta"><div><h2>Talk to a loan expert</h2><p>Mon–Sat, 10 am – 7 pm · <b class="num" style="user-select:all">+91 98765 43210</b></p></div>
+      <button type="button" class="btn btn--accent" data-apply>Request a call back</button></div>
+  </div></section>`;
+}
+
+function renderOfferCard() {
+  const p = P[heroPick];
+  const card = $('#offerCard'); if (!card) return;
+  const isCC = p.calc.mode === 'cc';
+  const amt = isCC ? p.calc.limit : p.calc.amount;
+  card.innerHTML = `
+    <div class="offer-card__head"><span class="muted small">Sample offers for</span><span class="tag">${p.name}</span></div>
+    <div><span class="amount num" id="ocAmt">${lakhs(amt)}</span>
+      <input type="range" id="ocRange" min="${p.calc.min}" max="${p.calc.max}" step="${p.calc.step}" value="${amt}" aria-label="${isCC ? 'Limit' : 'Loan amount'}"></div>
+    <div class="offer-rows" id="ocRows"></div>
+    <button type="button" class="btn btn--brand btn--block" data-apply="${p.id}">See my actual offers</button>
+    <p class="note">Indicative, for illustration. ${isCC ? 'Monthly interest at 60% average utilisation.' : `EMI over ${p.calc.tenure} years.`}</p>`;
+  const draw = () => {
+    const A = +$('#ocRange').value;
+    $('#ocAmt').textContent = lakhs(A);
+    $('#ocRows').innerHTML = [...p.offers].sort((a, b) => a[1] - b[1]).slice(0, 3).map(([id, rate]) => {
+      const pay = isCC ? (A * 0.6 * rate) / 1200 : emi(A, rate, p.calc.tenure);
+      return `<div class="offer-row">${bankDot(id)}<span><b style="font-size:.92rem">${LENDERS[id].name}</b><br><span class="muted small num">${isCC ? 'Interest' : 'EMI'} ${inr(pay)}/mo</span></span><span class="rate num">${rate.toFixed(2)}%<small>p.a.</small></span></div>`;
+    }).join('');
+  };
+  $('#ocRange').addEventListener('input', draw); draw();
+}
+
+function productView(p) {
+  const others = PRODUCTS.filter((x) => x.id !== p.id);
+  const e = p.elig;
+  const eligForm = e.kind === 'foir'
+    ? `<label class="field">${e.label} (₹)<input id="eInc" type="number" inputmode="numeric" value="60000"></label>
+       <label class="field">Existing EMIs per month (₹)<input id="eEmi" type="number" inputmode="numeric" value="0"></label>`
+    : `<label class="field">${e.label}<input id="eVal" type="number" inputmode="numeric" value="${e.kind === 'ltv' ? 8000000 : 30000000}"></label>`;
+  return `
+  <section class="hero"><div class="wrap hero__grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="#home">Home</a><span>/</span><span>Loans</span><span>/</span><span>${p.name}</span></nav>
+      <div style="display:flex;gap:14px;align-items:center;margin-top:18px"><span class="pcard__icon" style="background:color-mix(in srgb,var(--on-hero) 14%,transparent);color:var(--on-hero)">${icon(p.icon, 24)}</span><span class="tag tag--accent">${p.code}</span></div>
+      <h1 style="margin-top:12px">${p.name}</h1>
+      <p class="lead">${p.tagline}</p>
+      <dl class="facts num">${Object.entries(p.facts).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+    </div>
+    <form class="quick" id="quickForm" novalidate>
+      <h3>Get a call back for ${p.name}</h3>
+      <div class="row2">
+        <label class="field">Full name<input id="qName" name="name" autocomplete="name" required></label>
+        <label class="field">Mobile number<input id="qPhone" name="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" required></label>
+      </div>
+      <div class="row2">
+        <label class="field">${p.calc.mode === 'cc' ? 'Limit required (₹)' : 'Loan amount (₹)'}<input id="qAmt" name="amount" inputmode="numeric" placeholder="${p.calc.mode === 'cc' ? p.calc.limit : p.calc.amount}"></label>
+        <label class="field">City<input id="qCity" name="city" autocomplete="address-level2"></label>
+      </div>
+      <label class="consent"><input id="qConsent" type="checkbox" checked> I agree to be contacted by Finsol and its partner lenders by call, SMS or WhatsApp about my enquiry.</label>
+      <p class="field"><span class="err" id="qErr" hidden></span></p>
+      <button class="btn btn--accent btn--block" type="submit">Request call back</button>
+    </form>
+  </div></section>
+
+  <section class="block"><div class="wrap prod-layout">
+    <div>
+      <div class="ptabs" role="tablist" aria-label="${p.name} details">
+        ${['Features', 'Eligibility', 'Documents', 'Fees & charges'].map((t, i) => `<button type="button" role="tab" data-ptab="${i}" aria-selected="${i === 0}">${t}</button>`).join('')}
+      </div>
+      <div class="ppanel" data-ppanel="0">${ticks(p.features)}</div>
+      <div class="ppanel" data-ppanel="1" hidden>${ticks(p.eligibility)}</div>
+      <div class="ppanel" data-ppanel="2" hidden>${ticks(p.documents)}</div>
+      <div class="ppanel" data-ppanel="3" hidden><table class="fees num"><tbody>${p.fees.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody></table></div>
+
+      <div style="margin-top:48px;display:grid;gap:16px">
+        <div><p class="eyebrow">Compare lenders</p><h2>${p.name} rates</h2></div>
+        ${compareTable(p)}
+      </div>
+
+      <div style="margin-top:48px;display:grid;gap:16px">
+        <div><p class="eyebrow">Calculator</p><h2>${p.calc.mode === 'cc' ? 'Cash credit interest calculator' : `${p.name} EMI calculator`}</h2></div>
+        <div id="prodCalc"></div>
+      </div>
+
+      <div style="margin-top:48px;display:grid;gap:16px">
+        <div><p class="eyebrow">FAQs</p><h2>${p.name} questions</h2></div>
+        ${faqList([...p.faqs, ...GENERAL_FAQS.slice(0, 3)])}
+      </div>
+    </div>
+
+    <aside class="side-card" aria-label="Eligibility estimate">
+      <p class="eyebrow">Quick eligibility</p>
+      <h3>How much can I get?</h3>
+      ${eligForm}
+      <div class="elig-out"><span class="small muted">${p.calc.mode === 'cc' ? 'Estimated CC limit' : 'Estimated eligible amount'}</span><b class="num" id="eOut">–</b><span class="small muted" id="eNote"></span></div>
+      ${e.hint ? `<p class="note">${e.hint}</p>` : ''}
+      <button type="button" class="btn btn--brand btn--block" data-apply="${p.id}">Check exact offers</button>
+    </aside>
+  </div></section>
+
+  <section class="block block--alt"><div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Other products</p><h2>Explore more loans</h2></div></div>
+    <div class="products">${others.map((x) => `<a class="pcard" href="#${x.id}"><span class="pcard__icon">${icon(x.icon, 24)}</span><h3>${x.name}</h3><p class="muted small">From ${x.from}% p.a.</p><span class="pcard__go">View ${icon('arrow', 16)}</span></a>`).join('')}</div>
+  </div></section>`;
+}
+
+function bindProduct(p) {
+  renderCalculator($('#prodCalc'), p);
+  $$('[data-ptab]').forEach((b) => b.addEventListener('click', () => {
+    $$('[data-ptab]').forEach((x) => x.setAttribute('aria-selected', x === b));
+    $$('[data-ppanel]').forEach((panel) => { panel.hidden = panel.dataset.ppanel !== b.dataset.ptab; });
+  }));
+  const e = p.elig;
+  const calcElig = () => {
+    let out = 0, note = '';
+    if (e.kind === 'foir') {
+      const inc = +$('#eInc').value || 0, ex = +$('#eEmi').value || 0;
+      const maxEmi = Math.max(0, inc * e.foir - ex);
+      out = principalFor(maxEmi, e.rate, e.years);
+      note = `EMI up to ${inr(maxEmi)}/mo over ${e.years} yrs at ${e.rate}%`;
+    } else if (e.kind === 'ltv') {
+      out = (+$('#eVal').value || 0) * e.ltv; note = `${Math.round(e.ltv * 100)}% of property value`;
+    } else {
+      out = (+$('#eVal').value || 0) * e.pct; note = `${Math.round(e.pct * 100)}% of annual turnover`;
+    }
+    $('#eOut').textContent = out > 0 ? lakhs(out) : '–'; $('#eNote').textContent = note;
+  };
+  $$('.side-card input').forEach((i) => i.addEventListener('input', calcElig)); calcElig();
+  $('#quickForm').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const name = $('#qName').value.trim(), phone = $('#qPhone').value.trim();
+    const err = !name ? 'Enter your name.' : !/^[6-9]\d{9}$/.test(phone) ? 'Enter a valid 10-digit mobile number.' : !$('#qConsent').checked ? 'Tick the box so we can contact you.' : '';
+    $('#qErr').hidden = !err; $('#qErr').textContent = err;
+    if (err) return;
+    ev.target.innerHTML = `<div style="text-align:center;display:grid;gap:10px;justify-items:center;padding:16px 0"><span class="ok" style="width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--good);color:#fff">${icon('check', 28)}</span><h3>Thanks, ${name.split(' ')[0]}!</h3><p class="muted">A ${p.name} expert will call you on <b class="num">${phone}</b> within one working hour.</p><p class="note">Reference FS-${String(Date.now()).slice(-5)} · prototype, nothing was sent</p></div>`;
+  });
+}
+
+/* ===================== ROUTER ===================== */
+function route() {
+  const id = location.hash.slice(1);
+  const app = $('#app');
+  if (P[id]) {
+    app.innerHTML = productView(P[id]);
+    bindProduct(P[id]);
+    window.scrollTo(0, 0);
+    document.title = `${P[id].name} · Finsol`;
+    return;
+  }
+  if (!$('#offerCard')) {
+    app.innerHTML = homeView();
+    bindHome();
+  }
+  document.title = 'Finsol Loans';
+  if (id && id !== 'home') document.getElementById(id)?.scrollIntoView();
+  else window.scrollTo(0, 0);
+}
+function bindHome() {
+  renderOfferCard();
+  renderCalculator($('#homeCalc'), PRODUCTS[0], { switcher: true });
+  $$('[data-pick]').forEach((b) => b.addEventListener('click', () => {
+    heroPick = b.dataset.pick;
+    $$('[data-pick]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    $('#heroApply').innerHTML = `Check ${P[heroPick].name} offers ${icon('arrow', 18)}`;
+    $('#heroApply').dataset.apply = heroPick;
+    renderOfferCard();
+  }));
+  $$('[data-cmp]').forEach((b) => b.addEventListener('click', () => {
+    $$('[data-cmp]').forEach((x) => x.setAttribute('aria-selected', x === b));
+    $('#cmpTable').innerHTML = compareTable(P[b.dataset.cmp]);
+  }));
+}
+window.addEventListener('hashchange', route);
+
+/* ===================== APPLY FLOW ===================== */
+const flow = { step: 0, data: {} };
+const STEPS = ['Loan type', 'Amount', 'Your work', 'Location', 'Verify mobile', 'Offers'];
+function openFlow(productId) {
+  const onProduct = P[location.hash.slice(1)] ? location.hash.slice(1) : null;
+  const chosen = productId || onProduct;
+  flow.data = { product: chosen || heroPick };
+  flow.step = chosen ? 1 : 0;
+  $('#sheet').hidden = false; document.body.style.overflow = 'hidden';
+  drawFlow(); $('#sheetClose').focus();
+}
+function closeFlow() { $('#sheet').hidden = true; document.body.style.overflow = ''; }
+$('#sheetClose').addEventListener('click', closeFlow);
+$('#sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeFlow(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#sheet').hidden) closeFlow(); });
+
+function drawFlow() {
+  const d = flow.data, p = P[d.product], s = flow.step, body = $('#sheetBody');
+  $('#sheetStep').textContent = s < 5 ? `Step ${s + 1} of 5 · ${STEPS[s]}` : 'Your matches';
+  $('#sheetTitle').textContent = s < 5 ? `Check your ${p ? p.name.toLowerCase() : 'loan'} offers` : 'Offers you are likely to get';
+  $('#sheetProgress').style.width = `${Math.min(100, ((s + 1) / 5) * 100)}%`;
+  const nav = (nextLabel = 'Continue') => `<div class="sheet__nav">${s > 0 ? '<button type="button" class="btn btn--ghost" data-back>Back</button>' : '<span></span>'}<button type="submit" class="btn btn--accent">${nextLabel}</button></div>`;
+  let html = '';
+  if (s === 0) {
+    html = `<p class="muted">What do you need?</p><div class="choice-grid">${PRODUCTS.map((x) => `<button type="button" class="choice" data-choose="${x.id}" aria-pressed="${x.id === d.product}"><span class="pcard__icon" style="width:40px;height:40px">${icon(x.icon, 20)}</span><span>${x.name}<small>From ${x.from}% p.a.</small></span></button>`).join('')}</div>`;
+  } else if (s === 1) {
+    const c = p.calc, isCC = c.mode === 'cc', def = d.amount || (isCC ? c.limit : c.amount);
+    html = `<form id="fStep"><p class="muted">${isCC ? 'What working-capital limit do you need?' : `How much ${p.name.toLowerCase()} do you need?`}</p>
+      <p class="big-amount num" id="fAmtOut">${lakhs(def)}</p>
+      <input type="range" id="fAmt" min="${c.min}" max="${c.max}" step="${c.step}" value="${def}" style="width:100%;accent-color:var(--brand)" aria-label="Amount">
+      <div class="range__scale num"><span>${lakhs(c.min)}</span><span>${lakhs(c.max)}</span></div>
+      ${nav()}</form>`;
+  } else if (s === 2) {
+    const biz = ['business-loan', 'cash-credit'].includes(d.product);
+    html = `<form id="fStep" novalidate>
+      <label class="field">Employment type<select id="fEmp">
+        ${(biz ? ['Self-employed business', 'Self-employed professional', 'Salaried'] : ['Salaried', 'Self-employed business', 'Self-employed professional']).map((o) => `<option ${d.emp === o ? 'selected' : ''}>${o}</option>`).join('')}
+      </select></label>
+      <label class="field"><span id="fIncLabel">${biz ? 'Annual turnover (₹)' : 'Net monthly income (₹)'}</span><input id="fInc" type="number" inputmode="numeric" value="${d.income || ''}" placeholder="${biz ? 'e.g. 25000000' : 'e.g. 60000'}" required><span class="err" id="fErr" hidden></span></label>
+      ${biz ? `<label class="field">Business vintage<select id="fVin"><option>Less than 2 years</option><option selected>2–3 years</option><option>3–5 years</option><option>More than 5 years</option></select></label>` : `<label class="field">Company / employer name<input id="fCo" autocomplete="organization" value="${d.company || ''}"></label>`}
+      ${nav()}</form>`;
+  } else if (s === 3) {
+    html = `<form id="fStep" novalidate>
+      <div class="row2"><label class="field">City<input id="fCity" value="${d.city || ''}" placeholder="e.g. Pune" autocomplete="address-level2"></label>
+      <label class="field">Pincode<input id="fPin" inputmode="numeric" maxlength="6" value="${d.pin || ''}" placeholder="411001" autocomplete="postal-code"></label></div>
+      ${['home-loan', 'loan-against-property'].includes(d.product) ? `<label class="field">Property status<select id="fProp"><option>Property identified</option><option>Still searching</option><option>Already own (for LAP / BT)</option></select></label>` : ''}
+      <label class="field">Approximate CIBIL score<select id="fCibil"><option>750 and above</option><option>700 – 749</option><option>650 – 699</option><option>Below 650</option><option>I don't know</option></select></label>
+      <span class="err" id="fErr" hidden></span>
+      ${nav()}</form>`;
+  } else if (s === 4) {
+    html = d.otpSent ? `<form id="fStep" novalidate>
+      <p class="muted">Enter the 4-digit code sent to <b class="num">+91 ${d.phone}</b>. <span class="small">(Prototype: type any 4 digits.)</span></p>
+      <div class="otp">${[0, 1, 2, 3].map((i) => `<input id="otp${i}" inputmode="numeric" maxlength="1" aria-label="Digit ${i + 1}">`).join('')}</div>
+      <span class="err" id="fErr" hidden></span>
+      ${nav('Verify & see offers')}</form>`
+    : `<form id="fStep" novalidate>
+      <label class="field">Full name (as on PAN)<input id="fName" value="${d.name || ''}" autocomplete="name"></label>
+      <label class="field">Mobile number<input id="fPhone" type="tel" inputmode="numeric" maxlength="10" value="${d.phone || ''}" autocomplete="tel"></label>
+      <label class="consent"><input type="checkbox" id="fConsent" checked> I authorise Finsol and its partner lenders to contact me and to fetch my credit report for this enquiry. This overrides DND/NDNC registration.</label>
+      <span class="err" id="fErr" hidden></span>
+      ${nav('Send OTP')}</form>`;
+  } else {
+    const isCC = p.calc.mode === 'cc', amt = d.amount;
+    const matches = [...p.offers].sort((a, b) => a[1] - b[1]).slice(0, 3);
+    html = `<div class="result-head"><span class="ok">${icon('check', 28)}</span><h3>${d.name.split(' ')[0]}, you match with ${matches.length} lenders</h3><p class="muted small">For ${lakhs(amt)} ${p.name.toLowerCase()} · ${d.city || 'your city'}</p></div>
+      ${matches.map(([id, rate, fee, , ten], i) => {
+        const pay = isCC ? (amt * 0.6 * rate) / 1200 : emi(amt, rate, Math.min(p.calc.tenure, parseInt(ten) || p.calc.tenure));
+        return `<div class="match ${i === 0 ? 'top' : ''}">${bankDot(id)}<span><b>${LENDERS[id].name}</b>${i === 0 ? ' <span class="tag tag--accent">Best match</span>' : ''}<br><span class="small muted num">${rate.toFixed(2)}% · fee ${fee} · ${isCC ? 'interest' : 'EMI'} ${inr(pay)}/mo</span></span><button type="button" class="btn btn--brand" data-choose-lender="${id}">Select</button></div>`;
+      }).join('')}
+      <p class="note">Indicative offers based on what you shared. Final sanction is subject to documents and the lender's verification.</p>
+      <button type="button" class="btn btn--ghost btn--block" id="fDone">Done</button>`;
+  }
+  body.innerHTML = html;
+
+  $$('[data-choose]', body).forEach((b) => b.addEventListener('click', () => { flow.data.product = b.dataset.choose; flow.data.amount = null; flow.step = 1; drawFlow(); }));
+  $('[data-back]', body)?.addEventListener('click', () => { if (flow.step === 4 && d.otpSent) d.otpSent = false; else flow.step--; drawFlow(); });
+  $$('[data-choose-lender]', body).forEach((b) => b.addEventListener('click', () => {
+    body.innerHTML = `<div class="result-head" style="padding:12px 0"><span class="ok">${icon('check', 28)}</span><h3>${LENDERS[b.dataset.chooseLender].name} selected</h3><p class="muted">Your relationship manager will call you within one working hour with the document checklist.</p><p class="note">Reference FS-${String(Date.now()).slice(-5)} · prototype, nothing was sent</p><button type="button" class="btn btn--accent" id="fDone">Done</button></div>`;
+    $('#fDone', body).addEventListener('click', closeFlow);
+  }));
+  $('#fDone', body)?.addEventListener('click', closeFlow);
+  const amt = $('#fAmt', body);
+  amt?.addEventListener('input', () => { $('#fAmtOut', body).textContent = lakhs(+amt.value); });
+  $('#fEmp', body)?.addEventListener('change', (e) => { $('#fIncLabel', body).textContent = e.target.value === 'Salaried' ? 'Net monthly income (₹)' : 'Annual turnover / income (₹)'; });
+  const otp = $$('.otp input', body);
+  otp.forEach((inp, i) => inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, ''); if (inp.value && otp[i + 1]) otp[i + 1].focus(); }));
+  (otp[0] || $('input, select', body))?.focus();
+
+  $('#fStep', body)?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fail = (m) => { const el = $('#fErr', body); el.textContent = m; el.hidden = false; };
+    if (s === 1) d.amount = +amt.value;
+    if (s === 2) { d.emp = $('#fEmp', body).value; d.income = +$('#fInc', body).value; d.company = $('#fCo', body)?.value; if (!d.income) return fail('Enter your income so we can match the right lenders.'); }
+    if (s === 3) { d.city = $('#fCity', body).value.trim(); d.pin = $('#fPin', body).value.trim(); if (d.pin && !/^\d{6}$/.test(d.pin)) return fail('Pincode should be 6 digits.'); }
+    if (s === 4 && !d.otpSent) {
+      d.name = $('#fName', body).value.trim(); d.phone = $('#fPhone', body).value.trim();
+      if (!d.name) return fail('Enter your full name.');
+      if (!/^[6-9]\d{9}$/.test(d.phone)) return fail('Enter a valid 10-digit mobile number.');
+      if (!$('#fConsent', body).checked) return fail('Tick the consent box to continue.');
+      d.otpSent = true; return drawFlow();
+    }
+    if (s === 4 && d.otpSent && otp.some((i) => !i.value)) return fail('Enter all 4 digits.');
+    flow.step++; drawFlow();
+  });
+}
+
+/* global click handlers */
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-apply]');
+  if (a) { e.preventDefault(); openFlow(a.dataset.apply || null); return; }
+  const t = e.target.closest('[data-toast]');
+  if (t) toast(t.dataset.toast);
+});
+
+route();
+</script>
