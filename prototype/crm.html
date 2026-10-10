@@ -1,0 +1,975 @@
+<title>Finsol CRM</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: app shell — sidebar navigation by role, top bar with "viewing as" switcher and notifications, main work area */
+:root {
+  --bg: #f4f6fb; --surface: #ffffff; --surface-2: #eef1f8; --ink: #0e1530; --muted: #5b6480; --line: #dde2ee;
+  --brand: #1b2d6b; --brand-soft: #e7ecfa; --on-brand: #ffffff; --accent: #ff9f1c; --accent-strong: #d97800; --on-accent: #231300;
+  --side: #0f1b47; --on-side: #dfe5ff; --on-side-muted: #9aa6d6;
+  --good: #15803d; --good-soft: #e3f5e9; --warn: #b45309; --warn-soft: #fdf1dc; --bad: #b91c1c; --bad-soft: #fde6e6; --info: #1d4ed8; --info-soft: #e5edff;
+  --shadow: 0 16px 40px -24px rgba(15,27,71,.45);
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #080d1f; --surface: #10182f; --surface-2: #17213f; --ink: #e8ecf8; --muted: #a1abc8; --line: #26325a;
+  --brand: #93a9ff; --brand-soft: #1b2750; --on-brand: #0a1230; --accent: #ffad3b; --accent-strong: #ffc06a; --on-accent: #231300;
+  --side: #0a1230; --on-side: #dfe5ff; --on-side-muted: #8d99c9;
+  --good: #4ade80; --good-soft: #10301f; --warn: #fbbf24; --warn-soft: #33260b; --bad: #f87171; --bad-soft: #3a1616; --info: #93b4ff; --info-soft: #16244a;
+  --shadow: 0 16px 40px -24px rgba(0,0,0,.8); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #080d1f; --surface: #10182f; --surface-2: #17213f; --ink: #e8ecf8; --muted: #a1abc8; --line: #26325a;
+  --brand: #93a9ff; --brand-soft: #1b2750; --on-brand: #0a1230; --accent: #ffad3b; --accent-strong: #ffc06a; --on-accent: #231300;
+  --side: #0a1230; --on-side: #dfe5ff; --on-side-muted: #8d99c9;
+  --good: #4ade80; --good-soft: #10301f; --warn: #fbbf24; --warn-soft: #33260b; --bad: #f87171; --bad-soft: #3a1616; --info: #93b4ff; --info-soft: #16244a;
+  --shadow: 0 16px 40px -24px rgba(0,0,0,.8); color-scheme: dark; }
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; letter-spacing: -0.015em; line-height: 1.15; text-wrap: balance; }
+h1 { font-size: 1.6rem; } h2 { font-size: 1.2rem; } h3 { font-size: 1.02rem; font-family: var(--font-body); font-weight: 700; letter-spacing: 0; }
+p { margin: 0; }
+a { color: var(--brand); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: .86rem; }
+.tiny { font-size: .76rem; }
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes scan { 0% { top: 0; } 100% { top: calc(100% - 3px); } }
+@keyframes pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* shell */
+.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100%; }
+.side { background: var(--side); color: var(--on-side); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; padding: 4px 10px 18px; color: #fff; }
+.brand__mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #22398f, #0f1b47); border: 1px solid #2c3f86; display: grid; place-items: center; color: #ff9f1c; }
+.brand small { display: block; font: 600 .7rem var(--font-body); color: var(--on-side-muted); letter-spacing: .08em; text-transform: uppercase; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: var(--on-side); text-decoration: none; font-weight: 600; font-size: .94rem; }
+.nav-item:hover { background: rgba(255,255,255,.07); }
+.nav-item.active { background: rgba(255,159,28,.16); color: #ffcf8a; }
+.nav-item .count { margin-left: auto; background: #ff9f1c; color: #231300; border-radius: 99px; font-size: .72rem; padding: 1px 7px; font-weight: 700; }
+.nav-sep { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--on-side-muted); padding: 14px 12px 4px; }
+.side__foot { margin-top: auto; font-size: .76rem; color: var(--on-side-muted); padding: 12px; }
+.main { min-width: 0; display: flex; flex-direction: column; }
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.viewas { display: flex; align-items: center; gap: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px 6px 4px 12px; }
+.viewas label { font-size: .78rem; color: var(--muted); font-weight: 600; }
+.viewas select { border: 0; background: transparent; font-weight: 700; padding: 6px 4px; max-width: 280px; }
+.topbar__right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.icon-btn { position: relative; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; cursor: pointer; }
+.icon-btn .dot { position: absolute; top: -5px; right: -5px; min-width: 19px; height: 19px; border-radius: 99px; background: var(--accent); color: var(--on-accent); font-size: .7rem; font-weight: 800; display: grid; place-items: center; padding: 0 4px; }
+.content { padding: 24px; display: grid; gap: 20px; align-content: start; max-width: 1280px; width: 100%; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.page-head p { margin-top: 4px; }
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; padding: 10px; gap: 4px; }
+  .brand { padding: 4px 8px; font-size: 1.05rem; }
+  .brand small, .nav-sep, .side__foot { display: none; }
+  .nav-item { white-space: nowrap; }
+  .content { padding: 16px; }
+  .topbar { padding: 10px 16px; }
+}
+
+/* basics */
+.btn { display: inline-flex; align-items: center; gap: 7px; border: 1.5px solid transparent; border-radius: 10px; padding: 8px 14px; font-weight: 700; font-size: .9rem; cursor: pointer; transition: transform .15s, background .15s, border-color .15s; white-space: nowrap; background: none; }
+.btn:hover { transform: translateY(-1px); }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn--primary { background: var(--accent); color: var(--on-accent); }
+.btn--brand { background: var(--brand); color: var(--on-brand); }
+.btn--ghost { background: var(--surface); border-color: var(--line); color: var(--ink); }
+.btn--ghost:hover { border-color: var(--brand); }
+.btn--danger { background: var(--surface); border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); color: var(--bad); }
+.btn--sm { padding: 5px 10px; font-size: .82rem; border-radius: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; min-width: 0; }
+.card--flush { padding: 0; overflow: hidden; }
+.card__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+@media (max-width: 1000px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 2px; text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s; }
+a.kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.kpi b { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; }
+.kpi span { color: var(--muted); font-size: .84rem; }
+.kpi--warn { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+.kpi--warn b { color: var(--warn); }
+.kpi--bad { border-color: color-mix(in srgb, var(--bad) 55%, var(--line)); }
+.kpi--bad b { color: var(--bad); }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 99px; font-size: .76rem; font-weight: 700; white-space: nowrap; background: var(--surface-2); color: var(--muted); }
+.chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip--info { background: var(--info-soft); color: var(--info); }
+.chip--warn { background: var(--warn-soft); color: var(--warn); }
+.chip--good { background: var(--good-soft); color: var(--good); }
+.chip--bad { background: var(--bad-soft); color: var(--bad); }
+.chip--plain::before { display: none; }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 6px; font-size: .72rem; font-weight: 700; background: var(--surface-2); color: var(--muted); }
+.table-wrap { overflow-x: auto; }
+table.tbl { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.tbl th { text-align: left; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 14px; background: var(--surface-2); white-space: nowrap; }
+.tbl td { padding: 11px 14px; border-top: 1px solid var(--line); vertical-align: middle; }
+.tbl tbody tr { transition: background .15s; }
+.tbl tbody tr.link { cursor: pointer; }
+.tbl tbody tr.link:hover { background: var(--surface-2); }
+.empty { padding: 28px; text-align: center; color: var(--muted); }
+.field { display: grid; gap: 5px; font-size: .84rem; font-weight: 600; min-width: 0; }
+.field input, .field select, .field textarea { font-weight: 500; font-size: .94rem; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); width: 100%; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+.field textarea { resize: vertical; min-height: 70px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.form-grid .full { grid-column: 1 / -1; }
+@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+.err { color: var(--bad); font-size: .84rem; font-weight: 600; }
+.note { background: var(--surface-2); border-radius: 12px; padding: 12px 14px; font-size: .88rem; }
+.note--warn { background: var(--warn-soft); }
+.note--info { background: var(--info-soft); }
+.bar-list { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: 170px minmax(0,1fr) 34px; gap: 10px; align-items: center; font-size: .88rem; text-decoration: none; color: inherit; }
+.bar { height: 10px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--brand); border-radius: 6px; transition: width .5s; }
+
+/* case page */
+.case-head { display: grid; gap: 14px; }
+.case-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.meta-row { display: flex; gap: 8px 22px; flex-wrap: wrap; font-size: .88rem; color: var(--muted); }
+.meta-row b { color: var(--ink); font-weight: 600; }
+.stepper { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.stepper div { display: grid; gap: 6px; font-size: .74rem; color: var(--muted); font-weight: 600; text-align: center; }
+.stepper i { height: 6px; border-radius: 6px; background: var(--surface-2); }
+.stepper .done i { background: var(--brand); }
+.stepper .now i { background: var(--accent); animation: pulse 1.6s infinite; }
+.stepper .now { color: var(--ink); }
+@media (max-width: 700px) { .stepper div span { display: none; } }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.case-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+@media (max-width: 1100px) { .case-body { grid-template-columns: 1fr; } }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tabs button { background: none; border: 0; border-bottom: 3px solid transparent; padding: 11px 14px; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabpanel { padding-top: 18px; display: grid; gap: 16px; animation: pop .3s ease; }
+.next { border: 1.5px solid color-mix(in srgb, var(--accent) 55%, var(--line)); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.kv { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 14px; font-size: .9rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.people { display: grid; gap: 10px; }
+.person { display: flex; gap: 10px; align-items: center; font-size: .88rem; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .74rem; color: #fff; flex-shrink: 0; }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.timeline li { display: grid; grid-template-columns: 14px minmax(0,1fr); gap: 12px; padding-bottom: 14px; position: relative; font-size: .88rem; }
+.timeline li::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--brand); margin-top: 6px; }
+.timeline li::after { content: ''; position: absolute; left: 4px; top: 18px; bottom: 0; width: 2px; background: var(--line); }
+.timeline li:last-child::after { display: none; }
+
+/* documents + OCR */
+.doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.doc { border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 8px; background: var(--surface); position: relative; overflow: hidden; align-content: start; }
+.doc--missing { border-style: dashed; background: var(--surface-2); }
+.doc__thumb { height: 92px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; overflow: hidden; position: relative; }
+.doc__thumb img, .doc__thumb svg { width: 100%; height: 100%; object-fit: cover; }
+.doc__thumb.scanning::after { content: ''; position: absolute; left: 0; right: 0; height: 3px; background: var(--accent); box-shadow: 0 0 14px var(--accent); animation: scan .9s ease-in-out infinite alternate; }
+.doc__name { font-weight: 700; font-size: .9rem; }
+.doc__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.ocr-field { display: grid; gap: 4px; }
+.ocr-field .src { font-size: .72rem; font-weight: 700; }
+.src--high { color: var(--good); }
+.src--check { color: var(--warn); }
+.src--manual { color: var(--muted); }
+.ocr-field input.check { border-color: color-mix(in srgb, var(--warn) 60%, var(--line)); background: var(--warn-soft); }
+.pick { display: flex; gap: 6px; flex-wrap: wrap; }
+.pick button { border: 1.5px solid var(--line); background: var(--surface); padding: 4px 10px; border-radius: 8px; font-size: .82rem; cursor: pointer; }
+.pick button[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); font-weight: 700; }
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: .88rem; }
+.checklist li { display: flex; gap: 8px; align-items: center; }
+.tick { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: .7rem; font-weight: 800; flex-shrink: 0; }
+.tick--yes { background: var(--good); color: #fff; }
+.tick--no { border: 2px solid var(--line); }
+.req { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 8px; }
+.req--open { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+.email { border: 1px solid var(--line); border-radius: 12px; padding: 14px; font-size: .88rem; display: grid; gap: 6px; background: var(--surface-2); }
+.email pre { margin: 0; white-space: pre-wrap; font: inherit; }
+
+/* overlays */
+.overlay { position: fixed; inset: 0; z-index: 60; background: rgba(5,10,30,.55); display: grid; place-items: center; padding: 16px; animation: pop .2s ease; }
+.modal { width: min(620px, 100%); max-height: calc(100% - 24px); overflow: auto; background: var(--surface); border-radius: 18px; box-shadow: 0 40px 80px -30px rgba(0,0,0,.6); display: grid; animation: pop .3s ease; }
+.modal__head { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px 6px; gap: 10px; }
+.modal__body { padding: 10px 20px; display: grid; gap: 14px; }
+.modal__foot { padding: 12px 20px 18px; display: flex; justify-content: flex-end; gap: 8px; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 55; width: min(400px, 100%); background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; animation: pop .25s ease; }
+.drawer__head { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line); gap: 8px; }
+.drawer__list { overflow: auto; padding: 8px; display: grid; gap: 4px; align-content: start; }
+.notif { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; font-size: .88rem; text-decoration: none; color: inherit; }
+.notif:hover { background: var(--surface-2); }
+.notif.unread { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.toast { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); z-index: 90; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: .9rem; max-width: calc(100% - 32px); animation: pop .25s ease; }
+.alloc td select { padding: 6px 8px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); }
+.alloc td.on { background: var(--brand-soft); }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: .88rem; }
+.switch input { width: 18px; height: 18px; accent-color: var(--brand); }
+</style>
+
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="viewas"><label for="viewAs">Viewing as</label><select id="viewAs"></select></div>
+      <span class="tiny muted">Prototype · switch user to see each role's view</span>
+      <div class="topbar__right">
+        <button class="icon-btn" type="button" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4"/></svg><span class="dot" id="bellDot" hidden></span></button>
+        <button class="btn btn--ghost btn--sm" type="button" data-act="reset">Reset demo data</button>
+      </div>
+    </div>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<div id="overlayRoot"></div>
+
+<script>
+/* =================== MASTER DATA =================== */
+const ROLES = { superadmin: 'Super Admin', admin: 'Admin', manager: 'Manager', sales: 'Sales Executive', backend: 'Backend Executive' };
+const BANKS = [
+  { id: 'b1', no: 1, name: 'Bharat National Bank', spocs: [{ name: 'Ramesh Menon', email: 'ramesh.menon@bnb.example', product: 'All products' }] },
+  { id: 'b2', no: 2, name: 'Metro City Bank', spocs: [{ name: 'Farah Khan', email: 'farah.khan@metrocity.example', product: 'Personal Loan, Business Loan, Cash Credit', products: ['Personal Loan', 'Business Loan', 'Cash Credit'] }, { name: 'Ajay Rao', email: 'ajay.rao@metrocity.example', product: 'Home Loan, Loan Against Property', products: ['Home Loan', 'Loan Against Property'] }] },
+  { id: 'b3', no: 3, name: 'Sahyadri Co-operative Bank', spocs: [{ name: 'Meera Joshi', email: 'meera.joshi@sahyadri.example', product: 'All products' }] },
+  { id: 'b4', no: 4, name: 'Unity Housing Finance', spocs: [{ name: 'Deepak Shetty', email: 'deepak.shetty@unityhf.example', product: 'All products' }] },
+  { id: 'b5', no: 5, name: 'Kaveri Small Finance Bank', spocs: [{ name: 'Lakshmi Iyer', email: 'lakshmi.iyer@kaveri.example', product: 'All products' }] },
+];
+const PRODUCTS = ['Personal Loan', 'Business Loan', 'Home Loan', 'Loan Against Property', 'Cash Credit'];
+const DOC_TYPES = {
+  pan: 'PAN card', aadhaar: 'Aadhaar card', salary: 'Salary slips (3 months)', bank: 'Bank statement (6 months)', itr: 'Income tax returns / Form 16',
+  address: 'Address proof', gst: 'GST / business registration', property: 'Property documents', stock: 'Stock and debtors statement', photo: 'Photograph', other: 'Other document',
+};
+const REQUIRED = {
+  'Personal Loan': ['pan', 'aadhaar', 'salary', 'bank'],
+  'Business Loan': ['pan', 'aadhaar', 'bank', 'itr', 'gst'],
+  'Home Loan': ['pan', 'aadhaar', 'salary', 'bank', 'property'],
+  'Loan Against Property': ['pan', 'aadhaar', 'bank', 'itr', 'property'],
+  'Cash Credit': ['pan', 'aadhaar', 'bank', 'itr', 'gst', 'stock'],
+};
+const STATUS = {
+  draft: { label: 'Draft', tone: '' }, submitted: { label: 'Submitted', tone: 'info' }, processing: { label: 'In processing', tone: 'info' },
+  'docs-pending': { label: 'Documents pending', tone: 'warn' }, 'not-eligible': { label: 'Not eligible', tone: 'bad' }, ready: { label: 'Ready for bank login', tone: 'info' },
+  review: { label: 'Under bank review', tone: 'info' }, query: { label: 'Bank query', tone: 'warn' }, sanctioned: { label: 'Sanctioned', tone: 'good' },
+  rejected: { label: 'Rejected', tone: 'bad' }, disbursed: { label: 'Disbursed', tone: 'good' }, withdrawn: { label: 'Withdrawn', tone: '' },
+};
+const OPEN = ['submitted', 'processing', 'docs-pending', 'ready', 'review', 'query', 'sanctioned'];
+const STAGES = [['draft', 'Draft'], ['submitted', 'Submitted'], ['processing', 'Processing'], ['ready', 'Ready'], ['review', 'Bank review'], ['sanctioned', 'Sanctioned'], ['disbursed', 'Disbursed']];
+const STAGE_OF = { draft: 0, submitted: 1, processing: 2, 'docs-pending': 2, 'not-eligible': 2, ready: 3, review: 4, query: 4, sanctioned: 5, rejected: 4, disbursed: 6, withdrawn: -1 };
+const SLA_H = { pickup: 4, verify: 8, login: 8 };
+const OCR_FIELDS = [
+  ['name', 'Full name'], ['fatherName', "Father's name"], ['dob', 'Date of birth'], ['gender', 'Gender'], ['pan', 'PAN'], ['aadhaar', 'Aadhaar (last 4 digits)'],
+  ['mobile', 'Mobile'], ['email', 'Email'], ['address', 'Current address'], ['employmentType', 'Employment type'], ['employer', 'Employer or business name'],
+  ['netSalary', 'Net monthly salary (₹)'], ['grossSalary', 'Gross monthly salary (₹)'], ['annualIncome', 'Annual income from returns (₹)'], ['avgBalance', 'Average bank balance (₹)'],
+];
+/* what the simulated OCR "reads" from each sample document type */
+const OCR_SAMPLE = {
+  pan: { name: ['ROHAN SURESH KULKARNI', 'high'], fatherName: ['SURESH KULKARNI', 'high'], dob: ['1990-04-12', 'high'], pan: ['ABCPK1234F', 'high'] },
+  aadhaar: { name: ['Rohan S. Kulkarni', 'high'], dob: ['1990-04-12', 'high'], gender: ['Male', 'high'], aadhaar: ['4821', 'high'], address: ['Flat 12, Shanti Apartments, Paud Road, Kothrud, Pune 411038', 'check'] },
+  salary: { employer: ['Sunrise Technologies Pvt Ltd', 'high'], netSalary: ['85400', 'high'], grossSalary: ['102000', 'check'], employmentType: ['Salaried', 'high'] },
+  bank: { avgBalance: ['64200', 'check'] },
+  itr: { annualIncome: ['1224000', 'high'] },
+  address: { address: ['Flat 12, Shanti Apartments, Paud Road, Kothrud, Pune 411038', 'high'] },
+  gst: { employer: ['Kulkarni Traders', 'high'], employmentType: ['Business owner', 'check'] },
+};
+
+/* =================== STATE =================== */
+const KEY = 'finsol-crm-prototype-v1';
+const H = 3600e3, D = 24 * H;
+const now = () => Date.now();
+let S;
+function seed() {
+  const t = now();
+  const users = [
+    { id: 'u1', name: 'Vikram Shah', role: 'superadmin', title: 'Owner', color: '#7c3aed' },
+    { id: 'u2', name: 'Anjali Rao', role: 'admin', title: 'Operations head', color: '#0e7490' },
+    { id: 'u3', name: 'Suresh Iyer', role: 'manager', title: 'Sales and processing manager', color: '#b45309' },
+    { id: 'u4', name: 'Priya Patil', role: 'sales', followUp: 'sales', color: '#db2777' },
+    { id: 'u5', name: 'Arjun Nair', role: 'sales', followUp: 'backend', color: '#2563eb' },
+    { id: 'u6', name: 'Kiran Desai', role: 'backend', label: 'Executive A', color: '#15803d', leave: false },
+    { id: 'u7', name: 'Neha Joshi', role: 'backend', label: 'Executive B', color: '#c2410c', leave: false },
+    { id: 'u8', name: 'Rahul Verma', role: 'backend', label: 'Executive C', color: '#4f46e5', leave: false },
+  ];
+  const allocation = { u6: { b2: 'primary', b3: 'primary', b4: 'primary' }, u7: { b1: 'primary', b5: 'primary', b2: 'backup' }, u8: { b4: 'primary', b5: 'primary' } };
+  const doc = (type, by, at, status = 'verified') => ({ id: 'd' + Math.random().toString(36).slice(2, 8), type, name: `${type}_${Math.floor(Math.random() * 900 + 100)}.pdf`, by, at, status, comment: '' });
+  const docsFor = (product, by, at, status = 'verified', skip = []) => REQUIRED[product].filter((x) => !skip.includes(x)).map((x) => doc(x, by, at, status));
+  const app = (name, mobile, pan, employer, net, extra = {}) => ({ name, mobile, pan, employer, netSalary: net, dob: '1988-06-21', gender: 'Female', fatherName: '', aadhaar: String(Math.floor(Math.random() * 9000 + 1000)), email: '', address: 'Pune, Maharashtra', employmentType: 'Salaried', grossSalary: '', annualIncome: '', avgBalance: '', ...extra });
+  const base = (id, o) => ({ id, linked: [], docs: [], requests: [], ocr: {}, bank: {}, decision: null, disbursal: null, eligibility: null, finalSet: false, followUpOwner: null, override: '', unrouted: false, portalCheckedAt: null, tenure: 5, purpose: '', ...o });
+  const cases = [
+    base('FS-2026-00101', { status: 'draft', createdBy: 'u4', createdAt: t - 3 * H, product: 'Home Loan', bankId: 'b2', amount: 4500000, tenure: 20, applicant: app('Kavita Deshmukh', '9811100101', '', '', ''), docs: [doc('pan', 'u4', t - 3 * H, 'uploaded')] }),
+    base('FS-2026-00102', { status: 'submitted', createdBy: 'u5', createdAt: t - 7 * H, submittedAt: t - 5 * H, product: 'Home Loan', bankId: 'b4', amount: 6200000, tenure: 25, applicant: app('Sameer Kulkarni', '9811100102', 'BXKPK2211L', 'Orbit Systems Pvt Ltd', 145000), docs: docsFor('Home Loan', 'u5', t - 6 * H, 'uploaded') }),
+    base('FS-2026-00103', { status: 'processing', createdBy: 'u4', createdAt: t - 30 * H, submittedAt: t - 26 * H, pickedAt: t - 3 * H, assignee: 'u6', product: 'Personal Loan', bankId: 'b2', amount: 800000, applicant: app('Neelam Sharma', '9811100103', 'CQSPS7781K', 'Apex Pharma Ltd', 72000), docs: docsFor('Personal Loan', 'u4', t - 27 * H, 'uploaded') }),
+    base('FS-2026-00104', { status: 'docs-pending', createdBy: 'u4', createdAt: t - 3 * D, submittedAt: t - 3 * D + 2 * H, pickedAt: t - 2 * D, assignee: 'u7', product: 'Business Loan', bankId: 'b1', amount: 2500000, tenure: 4, applicant: app('Imran Shaikh', '9811100104', 'DMKPS4410H', 'Shaikh Distributors', '', { employmentType: 'Business owner', annualIncome: 2800000 }), docs: docsFor('Business Loan', 'u4', t - 3 * D, 'verified', ['gst']), requests: [{ id: 'r1', kind: 'docs', items: ['gst', 'bank'], note: 'GST certificate missing. Bank statement covers only 4 months; need 12 months of the current account.', owner: 'u4', due: t + 1 * D, status: 'open', createdAt: t - 1 * D, by: 'u7' }] }),
+    base('FS-2026-00105', { status: 'ready', createdBy: 'u5', createdAt: t - 4 * D, submittedAt: t - 4 * D + H, pickedAt: t - 3 * D, assignee: 'u6', product: 'Loan Against Property', bankId: 'b3', amount: 5000000, tenure: 12, applicant: app('Anita Rao', '9811100105', 'EPRPR9012M', 'Rao Textiles', '', { employmentType: 'Business owner', annualIncome: 3600000 }), docs: docsFor('Loan Against Property', 'u5', t - 4 * D), eligibility: { value: 'eligible', reason: 'Income and property value support the amount.', at: t - 6 * H } }),
+    base('FS-2026-00106', { status: 'review', createdBy: 'u5', createdAt: t - 9 * D, submittedAt: t - 9 * D, pickedAt: t - 8 * D, assignee: 'u7', product: 'Home Loan', bankId: 'b1', amount: 3800000, tenure: 20, applicant: app('Rajesh Patel', '9811100106', 'FQZPP3345J', 'Nova Logistics', 98000), docs: docsFor('Home Loan', 'u5', t - 9 * D), eligibility: { value: 'eligible', reason: 'Meets income and property norms.', at: t - 7 * D }, finalSet: true, bank: { ref: 'BNB/HL/2026/558812', loginDate: t - 5 * D, branch: 'Pune Camp', spocAt: t - 5 * D }, portalCheckedAt: t - 2 * D }),
+    base('FS-2026-00107', { status: 'query', createdBy: 'u5', createdAt: t - 12 * D, submittedAt: t - 12 * D, pickedAt: t - 11 * D, assignee: 'u8', product: 'Cash Credit', bankId: 'b5', amount: 6000000, tenure: 1, applicant: app('Mahesh Gupta', '9811100107', 'GHTPG5521C', 'Gupta Agro Traders', '', { employmentType: 'Business owner', annualIncome: 4100000 }), docs: docsFor('Cash Credit', 'u5', t - 12 * D), eligibility: { value: 'eligible', reason: 'Turnover supports the limit.', at: t - 10 * D }, finalSet: true, bank: { ref: 'KSFB-CC-77120', loginDate: t - 8 * D, branch: 'Nashik', spocAt: t - 8 * D }, portalCheckedAt: t - 3 * H, requests: [{ id: 'r2', kind: 'query', items: ['stock'], note: 'Bank needs the latest month-end stock and debtors statement signed by the proprietor, and an explanation for the dip in March sales.', owner: 'u8', due: t + 2 * D, status: 'open', createdAt: t - 1 * D, by: 'u8' }] }),
+    base('FS-2026-00108', { status: 'sanctioned', createdBy: 'u4', createdAt: t - 15 * D, submittedAt: t - 15 * D, pickedAt: t - 14 * D, assignee: 'u6', product: 'Personal Loan', bankId: 'b2', amount: 600000, applicant: app('Sneha Kulkarni', '9811100108', 'HJKPK6610D', 'Bright Schools Trust', 64000), docs: docsFor('Personal Loan', 'u4', t - 15 * D), eligibility: { value: 'eligible', reason: '', at: t - 13 * D }, finalSet: true, bank: { ref: 'MCB/PL/90021', loginDate: t - 12 * D, branch: 'Kothrud', spocAt: t - 12 * D }, decision: { type: 'sanctioned', amount: 600000, rate: 10.75, tenure: 5, fee: '1.25%', date: t - 2 * D, conditions: 'Salary account with the bank within 3 months.' } }),
+    base('FS-2026-00109', { status: 'disbursed', createdBy: 'u5', createdAt: t - 30 * D, submittedAt: t - 30 * D, pickedAt: t - 29 * D, assignee: 'u6', product: 'Home Loan', bankId: 'b4', amount: 5200000, tenure: 25, applicant: app('Arjun Mehta', '9811100109', 'JKLPM7712E', 'Zenith Finserv', 160000), docs: docsFor('Home Loan', 'u5', t - 30 * D), eligibility: { value: 'eligible', reason: '', at: t - 28 * D }, finalSet: true, bank: { ref: 'UHF-HL-44102', loginDate: t - 27 * D, branch: 'Baner', spocAt: t - 27 * D }, decision: { type: 'sanctioned', amount: 5200000, rate: 8.4, tenure: 25, fee: '0.25%', date: t - 12 * D, conditions: '' }, disbursal: { amount: 5200000, date: t - 4 * D, lan: 'UHF00451189', mode: 'Full' } }),
+    base('FS-2026-00110', { status: 'rejected', createdBy: 'u4', createdAt: t - 20 * D, submittedAt: t - 20 * D, pickedAt: t - 19 * D, assignee: 'u7', product: 'Business Loan', bankId: 'b5', amount: 1500000, tenure: 3, applicant: app('Farhan Ali', '9811100110', 'KLMPA1182F', 'Ali Electricals', '', { employmentType: 'Business owner' }), docs: docsFor('Business Loan', 'u4', t - 20 * D), eligibility: { value: 'eligible', reason: '', at: t - 18 * D }, finalSet: true, bank: { ref: 'KSFB-BL-66001', loginDate: t - 16 * D, branch: 'Hadapsar', spocAt: t - 16 * D }, decision: { type: 'rejected', reason: 'Business vintage under the bank\'s 3-year requirement.', date: t - 6 * D } }),
+    base('FS-2026-00111', { status: 'not-eligible', createdBy: 'u5', createdAt: t - 2 * D, submittedAt: t - 2 * D, pickedAt: t - 1 * D, assignee: 'u7', product: 'Personal Loan', bankId: 'b1', amount: 1200000, applicant: app('Pooja Nair', '9811100111', 'LMNPN4471G', 'City Retail', 38000), docs: docsFor('Personal Loan', 'u5', t - 2 * D), eligibility: { value: 'not-eligible', reason: 'Existing monthly instalments take 62% of salary; bank allows 50%.', at: t - 4 * H, confirmed: false } }),
+  ];
+  const audit = [];
+  cases.forEach((c) => {
+    audit.push({ at: c.createdAt, by: c.createdBy, caseId: c.id, text: 'Case created' });
+    if (c.submittedAt) audit.push({ at: c.submittedAt, by: c.createdBy, caseId: c.id, text: 'Submitted for processing' });
+    if (c.pickedAt) audit.push({ at: c.pickedAt, by: c.assignee, caseId: c.id, text: `Picked up by ${users.find((u) => u.id === c.assignee).name}` });
+    c.requests.forEach((r) => audit.push({ at: r.createdAt, by: r.by, caseId: c.id, text: r.kind === 'docs' ? 'Documents requested' : 'Bank query logged' }));
+    if (c.bank.ref) audit.push({ at: c.bank.loginDate, by: c.assignee, caseId: c.id, text: `Logged in with bank, reference ${c.bank.ref}; SPOC emailed` });
+    if (c.decision) audit.push({ at: c.decision.date, by: c.assignee, caseId: c.id, text: c.decision.type === 'sanctioned' ? 'Bank sanctioned the loan' : 'Bank rejected the application' });
+    if (c.disbursal) audit.push({ at: c.disbursal.date, by: c.assignee, caseId: c.id, text: 'Disbursal recorded' });
+  });
+  const notifications = [
+    { id: 'n1', userId: 'u6', at: t - 5 * H, caseId: 'FS-2026-00102', text: 'New case in your queue: Sameer Kulkarni, Home Loan, Unity Housing Finance', read: false },
+    { id: 'n2', userId: 'u8', at: t - 5 * H, caseId: 'FS-2026-00102', text: 'New case in your queue: Sameer Kulkarni, Home Loan, Unity Housing Finance', read: false },
+    { id: 'n3', userId: 'u4', at: t - 1 * D, caseId: 'FS-2026-00104', text: 'Documents requested from you on Imran Shaikh: GST registration, bank statement', read: false },
+    { id: 'n4', userId: 'u3', at: t - 4 * H, caseId: 'FS-2026-00111', text: 'Please confirm: Pooja Nair marked not eligible by Neha Joshi', read: false },
+    { id: 'n5', userId: 'u4', at: t - 2 * D, caseId: 'FS-2026-00108', text: 'Sanctioned: Sneha Kulkarni, ₹6 lakh by Metro City Bank', read: true },
+  ];
+  return { v: 1, me: 'u4', users, allocation, cases, audit, notifications, emails: [], seq: 112 };
+}
+function load() { try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return s; } } catch (e) {} return seed(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S, (k, v) => (k === 'preview' || k === 'scanning' ? undefined : v))); } catch (e) {} }
+S = load();
+const previews = {}; // uploaded image previews, kept in memory only
+
+/* =================== HELPERS =================== */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const user = (id) => S.users.find((u) => u.id === id);
+const me = () => user(S.me);
+const bank = (id) => BANKS.find((b) => b.id === id);
+const spocsFor = (b, product) => { const m = b.spocs.filter((sp) => !sp.products || sp.products.includes(product)); return m.length ? m : b.spocs; };
+const getCase = (id) => S.cases.find((c) => c.id === id);
+const inr = (n) => (n === '' || n == null || isNaN(n) ? '—' : '₹' + Math.round(+n).toLocaleString('en-IN'));
+const amt = (n) => { n = +n; if (!n) return '—'; return n >= 1e7 ? `₹${+(n / 1e7).toFixed(2)} crore` : n >= 1e5 ? `₹${+(n / 1e5).toFixed(2)} lakh` : inr(n); };
+const dt = (t) => (t ? new Date(t).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '—');
+const day = (t) => (t ? new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
+const ago = (t) => { const m = Math.round((now() - t) / 60000); if (m < 1) return 'just now'; if (m < 60) return `${m} min ago`; const h = Math.round(m / 60); if (h < 24) return `${h} h ago`; return `${Math.round(h / 24)} d ago`; };
+const hoursSince = (t) => (now() - t) / H;
+const isRole = (...r) => r.includes(me().role);
+const isMgr = () => isRole('manager', 'admin', 'superadmin');
+const chip = (status, extra = '') => `<span class="chip ${STATUS[status].tone ? 'chip--' + STATUS[status].tone : ''}">${STATUS[status].label}${extra}</span>`;
+const avatar = (u, size = 32) => `<span class="avatar" style="background:${u.color};width:${size}px;height:${size}px">${u.name.split(' ').map((w) => w[0]).join('')}</span>`;
+const docLabel = (k) => DOC_TYPES[k] || k;
+let toastT;
+const toast = (msg) => { $('.toast')?.remove(); const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg; document.body.append(el); clearTimeout(toastT); toastT = setTimeout(() => el.remove(), 3000); };
+const salesOf = (c) => user(c.createdBy);
+const managerIds = () => S.users.filter((u) => u.role === 'manager').map((u) => u.id);
+const adminIds = () => S.users.filter((u) => ['admin', 'superadmin'].includes(u.role)).map((u) => u.id);
+const allocatedTo = (bankId, type) => S.users.filter((u) => u.role === 'backend' && S.allocation[u.id]?.[bankId] === type);
+const myBanks = (u) => Object.entries(S.allocation[u.id] || {}).filter(([, v]) => v).map(([k]) => k);
+const followUpOwner = (c) => { const mode = c.followUpOwner || salesOf(c).followUp || 'sales'; return mode === 'sales' ? c.createdBy : c.assignee || c.createdBy; };
+const openReqs = (c, kind) => c.requests.filter((r) => r.status !== 'done' && (!kind || r.kind === kind));
+const missingDocs = (c) => (REQUIRED[c.product] || []).filter((t) => !c.docs.some((d) => d.type === t));
+
+function log(c, text, by = S.me) { S.audit.unshift({ at: now(), by, caseId: c ? c.id : null, text }); }
+function notify(userIds, text, c, email = false) {
+  [...new Set(userIds.filter(Boolean))].forEach((uid) => {
+    S.notifications.unshift({ id: 'n' + Math.random().toString(36).slice(2, 9), userId: uid, at: now(), caseId: c?.id, text, read: uid === S.me });
+    if (email) S.emails.unshift({ at: now(), to: `${user(uid).name} <${user(uid).name.split(' ')[0].toLowerCase()}@finsol.example>`, subject: text, body: `${text}\n\nOpen the case in Finsol CRM: ${c ? c.id : ''}` });
+  });
+}
+const people = (c) => ({ sales: c.createdBy, backend: c.assignee, managers: managerIds(), admins: adminIds() });
+
+/* visibility */
+function canSee(c, u = me()) {
+  if (['superadmin', 'admin', 'manager'].includes(u.role)) return true;
+  if (u.role === 'sales') return c.createdBy === u.id;
+  if (u.role === 'backend') return c.assignee === u.id || (c.status !== 'draft' && myBanks(u).includes(c.bankId));
+  return false;
+}
+function inMyQueue(c, u = me()) {
+  if (c.status !== 'submitted' || c.assignee || u.role !== 'backend' || u.leave) return false;
+  const type = S.allocation[u.id]?.[c.bankId];
+  if (type === 'primary') return true;
+  if (type === 'backup') { const prim = allocatedTo(c.bankId, 'primary').filter((x) => !x.leave); return prim.length === 0 || hoursSince(c.submittedAt) > SLA_H.pickup; }
+  return false;
+}
+const isAssignee = (c) => c.assignee === S.me;
+const canWork = (c) => isAssignee(c) || isMgr();
+
+/* =================== WORKFLOW ACTIONS =================== */
+function submitCase(c, override) {
+  c.status = 'submitted'; c.submittedAt = now(); c.override = override || '';
+  log(c, override ? `Submitted with missing items. Reason: ${override}` : 'Submitted for processing');
+  routeCase(c);
+}
+function routeCase(c) {
+  const b = bank(c.bankId);
+  const prim = allocatedTo(c.bankId, 'primary').filter((u) => !u.leave);
+  const backup = allocatedTo(c.bankId, 'backup').filter((u) => !u.leave);
+  const P = people(c);
+  notify([P.sales], `Submitted: ${c.applicant.name}, ${c.product}, ${b.name}`, c);
+  if (prim.length === 1) {
+    c.assignee = prim[0].id; c.status = 'processing'; c.pickedAt = now(); c.unrouted = false;
+    log(c, `Auto-assigned to ${prim[0].name} (only executive allocated to ${b.name})`, 'system');
+    notify([prim[0].id], `New case assigned to you: ${c.applicant.name}, ${c.product}, ${b.name}`, c, true);
+    notify([P.sales, ...P.managers], `${c.applicant.name} is with ${prim[0].name} for processing`, c);
+  } else if (prim.length > 1 || backup.length) {
+    const pool = prim.length ? prim : backup;
+    log(c, `Placed in the ${b.name} queue for ${pool.map((u) => u.name).join(', ')}`, 'system');
+    notify(pool.map((u) => u.id), `New case in your queue: ${c.applicant.name}, ${c.product}, ${b.name}`, c, true);
+    notify(P.managers, `New case submitted: ${c.applicant.name}, ${c.product}, ${b.name}`, c);
+  } else {
+    c.unrouted = true;
+    log(c, `No Backend Executive available for ${b.name}; sent to Manager`, 'system');
+    notify([...P.managers, ...P.admins], `Unrouted case: no Backend Executive for ${b.name} (${c.applicant.name})`, c, true);
+  }
+}
+function assignTo(c, uid, how = 'Assigned') {
+  const prev = c.assignee;
+  c.assignee = uid; c.unrouted = false;
+  if (c.status === 'submitted') { c.status = 'processing'; c.pickedAt = now(); }
+  log(c, `${how} to ${user(uid).name}`);
+  notify([uid, prev, c.createdBy, ...managerIds()], `${c.applicant.name} ${how.toLowerCase()} to ${user(uid).name}`, c);
+}
+function requestItems(c, kind, items, note, ownerId, due) {
+  const r = { id: 'r' + Math.random().toString(36).slice(2, 7), kind, items, note, owner: ownerId, due, status: 'open', createdAt: now(), by: S.me };
+  c.requests.unshift(r);
+  c.status = kind === 'docs' ? 'docs-pending' : 'query';
+  const what = items.map(docLabel).join(', ');
+  log(c, kind === 'docs' ? `Documents requested from ${user(ownerId).name}: ${what}` : `Bank query logged, follow-up by ${user(ownerId).name}: ${note}`);
+  notify([ownerId], kind === 'docs' ? `Documents needed on ${c.applicant.name}: ${what} (due ${day(due)})` : `Bank query on ${c.applicant.name}: please follow up (due ${day(due)})`, c, true);
+  notify([c.createdBy, c.assignee, ...managerIds()].filter((x) => x !== ownerId), kind === 'docs' ? `Documents requested on ${c.applicant.name}` : `Bank query logged on ${c.applicant.name}`, c);
+}
+
+/* =================== OCR (simulated) =================== */
+function applyOcr(c, type) {
+  const found = OCR_SAMPLE[type]; if (!found) return 0;
+  let n = 0;
+  Object.entries(found).forEach(([k, [val, conf]]) => {
+    const meta = (c.ocr[k] = c.ocr[k] || { values: [] });
+    if (!meta.values.some((v) => v.value === val)) meta.values.push({ value: val, conf, src: type });
+    if (!c.applicant[k]) { c.applicant[k] = val; meta.source = type; meta.conf = conf; }
+    n++;
+  });
+  return n;
+}
+const norm = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9 ]/g, '').replace(/\b([A-Z])\b/g, '$1').replace(/\s+/g, ' ').trim();
+function conflicts(c, k) { const vals = c.ocr[k]?.values || []; const uniq = [...new Map(vals.map((v) => [norm(v.value), v])).values()]; return uniq.length > 1 ? uniq : null; }
+
+function docMock(type) {
+  const label = docLabel(type);
+  const lines = { pan: ['INCOME TAX DEPT', 'ROHAN SURESH KULKARNI', '12/04/1990', 'ABCPK1234F'], aadhaar: ['GOVT OF INDIA', 'Rohan S. Kulkarni', 'DOB 12/04/1990', 'XXXX XXXX 4821'], salary: ['PAYSLIP · MARCH', 'Sunrise Technologies', 'Net pay 85,400', 'Gross 1,02,000'] }[type] || [label.toUpperCase(), '— — — — — —', '— — — —', '— — — — —'];
+  return `<svg viewBox="0 0 190 92" aria-hidden="true"><rect width="190" height="92" fill="#eef2ff"/><rect x="10" y="10" width="170" height="72" rx="6" fill="#ffffff" stroke="#cdd8ff"/><rect x="10" y="10" width="170" height="16" rx="6" fill="#1b2d6b"/><text x="18" y="22" font-size="8" font-weight="700" fill="#fff">${esc(lines[0])}</text><text x="18" y="42" font-size="8.5" font-weight="700" fill="#1b2d6b">${esc(lines[1])}</text><text x="18" y="56" font-size="8" fill="#59627f">${esc(lines[2])}</text><text x="18" y="70" font-size="8" fill="#59627f">${esc(lines[3])}</text><text x="150" y="76" font-size="9" font-weight="800" fill="#ff9f1c" transform="rotate(-18 150 76)">SAMPLE</text></svg>`;
+}
+
+/* =================== MODAL =================== */
+function modal({ title, body, submit = 'Save', danger = false, onSubmit, wide = false }) {
+  const root = $('#overlayRoot');
+  root.innerHTML = `<div class="overlay" id="ov"><form class="modal" id="mform" novalidate style="${wide ? 'width:min(760px,100%)' : ''}"><div class="modal__head"><h2>${title}</h2><button type="button" class="icon-btn" data-close aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="modal__body">${body}<p class="err" id="merr" hidden></p></div><div class="modal__foot"><button type="button" class="btn btn--ghost" data-close>Cancel</button>${submit ? `<button type="submit" class="btn ${danger ? 'btn--danger' : 'btn--primary'}">${submit}</button>` : ''}</div></form></div>`;
+  const close = () => { root.innerHTML = ''; };
+  $$('[data-close]', root).forEach((b) => b.addEventListener('click', close));
+  $('#ov').addEventListener('click', (e) => { if (e.target.id === 'ov') close(); });
+  $('#mform').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    f._all = (name) => new FormData(e.target).getAll(name);
+    const err = onSubmit(f);
+    if (err) { $('#merr').textContent = err; $('#merr').hidden = false; return; }
+    close(); save(); render();
+  });
+  $('input, select, textarea', root)?.focus();
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#overlayRoot').innerHTML = ''; closeDrawer(); } });
+const dueIn = (days) => new Date(now() + days * D).toISOString().slice(0, 10);
+const userOpts = (list, sel) => list.map((u) => `<option value="${u.id}" ${u.id === sel ? 'selected' : ''}>${esc(u.name)}${u.label ? ' (' + u.label + ')' : ''} · ${ROLES[u.role]}</option>`).join('');
+const docChecks = (name, preselect = []) => `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">${Object.entries(DOC_TYPES).map(([k, v]) => `<label class="switch"><input type="checkbox" name="${name}" value="${k}" ${preselect.includes(k) ? 'checked' : ''}> ${v}</label>`).join('')}</div>`;
+
+/* =================== ACTION HANDLERS =================== */
+const ACT = {
+  reset() { modal({ title: 'Reset demo data?', body: '<p>All cases, notifications and settings go back to the sample data.</p>', submit: 'Reset', danger: true, onSubmit() { const keep = S.me; S = seed(); S.me = keep; toast('Demo data reset'); } }); },
+  newCase() {
+    modal({ title: 'New case', body: `<p class="muted small">Start with the customer's mobile number. We check for open cases with the same number first.</p><label class="field">Customer mobile number<input name="mobile" inputmode="numeric" maxlength="10" placeholder="10-digit mobile"></label><label class="field">Customer name (optional, OCR will fill it)<input name="name"></label>`, submit: 'Create draft', onSubmit(f) {
+      if (!/^[6-9]\d{9}$/.test(f.mobile || '')) return 'Enter a valid 10-digit mobile number.';
+      const dup = S.cases.find((c) => c.applicant.mobile === f.mobile && !['rejected', 'disbursed', 'withdrawn'].includes(c.status) && !(c.status === 'not-eligible' && c.eligibility?.confirmed));
+      const id = `FS-2026-${String(++S.seq).padStart(5, '0')}`;
+      const c = { id, status: 'draft', createdBy: S.me, createdAt: now(), product: 'Personal Loan', bankId: '', amount: '', tenure: 5, purpose: '', applicant: { name: f.name || '', mobile: f.mobile, fatherName: '', dob: '', gender: '', pan: '', aadhaar: '', email: '', address: '', employmentType: '', employer: '', netSalary: '', grossSalary: '', annualIncome: '', avgBalance: '' }, linked: [], docs: [], requests: [], ocr: {}, bank: {}, decision: null, disbursal: null, eligibility: null, finalSet: false, followUpOwner: null, override: '', unrouted: false };
+      if (f.name) c.ocr.name = { values: [], source: 'manual' };
+      S.cases.unshift(c); log(c, 'Case created');
+      if (dup) toast(`Possible duplicate: ${dup.id} is open for this mobile number`);
+      location.hash = '#case/' + id; return null;
+    } });
+  },
+  sample(ds) { const c = getCase(ds.case); uploadDoc(c, ds.type, null, ds.req); },
+  pickFile(ds) { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,application/pdf'; inp.onchange = () => { if (inp.files[0]) uploadDoc(getCase(ds.case), ds.type, inp.files[0], ds.req); }; inp.click(); },
+  verifyDoc(ds) { const c = getCase(ds.case), d = c.docs.find((x) => x.id === ds.doc); d.status = 'verified'; d.comment = ''; log(c, `Verified ${docLabel(d.type)}`); save(); render(); },
+  rejectDoc(ds) {
+    const c = getCase(ds.case), d = c.docs.find((x) => x.id === ds.doc);
+    modal({ title: `Needs replacement: ${docLabel(d.type)}`, body: '<label class="field">What is wrong?<textarea name="comment" placeholder="For example: blurred, older than 3 months, name mismatch"></textarea></label>', submit: 'Mark needs replacement', onSubmit(f) { if (!f.comment) return 'Add a short reason.'; d.status = 'replace'; d.comment = f.comment; log(c, `${docLabel(d.type)} needs replacement: ${f.comment}`); } });
+  },
+  download(ds) { const c = getCase(ds.case), d = c.docs.find((x) => x.id === ds.doc); log(c, `Downloaded ${docLabel(d.type)}`); save(); toast('Download logged in the audit trail (prototype: no real file)'); },
+  deleteDoc(ds) { const c = getCase(ds.case), d = c.docs.find((x) => x.id === ds.doc); modal({ title: 'Delete document?', body: `<p>${docLabel(d.type)} will be removed. This is recorded in the audit log.</p>`, submit: 'Delete', danger: true, onSubmit() { c.docs = c.docs.filter((x) => x !== d); log(c, `Deleted ${docLabel(d.type)}`); } }); },
+  submit(ds) {
+    const c = getCase(ds.case), a = c.applicant;
+    const req = [['name', 'Full name'], ['mobile', 'Mobile'], ['pan', 'PAN'], ['dob', 'Date of birth']].filter(([k]) => !a[k]).map(([, l]) => l);
+    if (!c.bankId) req.push('Bank applied for'); if (!+c.amount) req.push('Loan amount');
+    if (req.length) { toast('Fill in: ' + req.join(', ')); return; }
+    if (a.pan && !/^[A-Z]{5}\d{4}[A-Z]$/.test(a.pan)) { toast('PAN should look like ABCDE1234F'); return; }
+    const miss = missingDocs(c);
+    modal({ title: 'Submit case for processing', body: `<div class="note"><b>${esc(a.name)}</b> · ${c.product} · ${amt(c.amount)} · ${bank(c.bankId).name}</div>${miss.length ? `<div class="note note--warn">Missing documents: <b>${miss.map(docLabel).join(', ')}</b>. You can still submit with a reason the Backend Executive will see.</div><label class="field">Reason for submitting without them<textarea name="override"></textarea></label>` : '<p class="muted small">All mandatory documents are uploaded. The case will be routed to the Backend Executives allocated to this bank, and everyone on the case is notified.</p>'}`, submit: 'Submit case', onSubmit(f) {
+      if (miss.length && !f.override) return 'Give a reason or upload the missing documents first.';
+      submitCase(c, f.override); toast('Submitted and routed to processing');
+    } });
+  },
+  assignMe(ds) { const c = getCase(ds.case); assignTo(c, S.me, 'Picked up'); save(); toast('Case is now yours'); render(); },
+  reassign(ds) {
+    const c = getCase(ds.case);
+    const list = S.users.filter((u) => u.role === 'backend');
+    modal({ title: 'Assign Backend Executive', body: `<label class="field">Backend Executive<select name="uid">${userOpts(list, c.assignee)}</select></label><p class="muted small">Allocated to ${bank(c.bankId).name}: ${[...allocatedTo(c.bankId, 'primary'), ...allocatedTo(c.bankId, 'backup')].map((u) => u.name).join(', ') || 'nobody'}.</p>`, submit: 'Assign', onSubmit(f) { assignTo(c, f.uid, c.assignee ? 'Reassigned' : 'Assigned'); } });
+  },
+  requestDocs(ds) {
+    const c = getCase(ds.case), owner = followUpOwner(c);
+    const pre = [...missingDocs(c), ...c.docs.filter((d) => d.status === 'replace').map((d) => d.type)];
+    modal({ title: 'Request documents', wide: true, body: `<div class="field">Documents needed${docChecks('items', pre)}</div><label class="field">Note for the follow-up owner<textarea name="note" placeholder="What is missing or wrong"></textarea></label><div class="form-grid"><label class="field">Follow-up owner<select name="owner">${userOpts([salesOf(c), user(c.assignee)].filter(Boolean), owner)}</select></label><label class="field">Due date<input type="date" name="due" value="${dueIn(2)}"></label></div><p class="muted small">Default owner comes from ${esc(salesOf(c).name)}'s arrangement: <b>${(c.followUpOwner || salesOf(c).followUp) === 'sales' ? 'Sales Executive follows up' : 'Backend Executive follows up'}</b>.</p>`, submit: 'Send request', onSubmit(f) {
+      const items = f._all('items'); if (!items.length) return 'Pick at least one document.';
+      requestItems(c, 'docs', items, f.note, f.owner, Date.parse(f.due)); toast('Request sent');
+    } });
+  },
+  respond(ds) {
+    const c = getCase(ds.case), r = c.requests.find((x) => x.id === ds.req);
+    modal({ title: r.kind === 'docs' ? 'Upload requested documents' : 'Upload response to bank query', body: `<p class="small">${esc(r.note || '')}</p><div class="field">Documents uploaded now${docChecks('items', r.items)}</div><label class="field">Comment<textarea name="comment" placeholder="Optional"></textarea></label><p class="muted small">Prototype: ticked documents are added as sample files.</p>`, submit: 'Upload', onSubmit(f) {
+      const items = f._all('items'); if (!items.length && r.kind === 'docs') return 'Tick the documents you are uploading.';
+      items.forEach((t) => { c.docs.forEach((d) => { if (d.type === t && d.status === 'replace') d.status = 'superseded'; }); c.docs.push({ id: 'd' + Math.random().toString(36).slice(2, 8), type: t, name: `${t}_reupload.pdf`, by: S.me, at: now(), status: 'uploaded', comment: '' }); });
+      if (r.kind === 'docs') {
+        r.status = 'done'; r.doneAt = now(); r.comment = f.comment;
+        log(c, `Uploaded requested documents: ${items.map(docLabel).join(', ')}`);
+        if (!openReqs(c, 'docs').length && c.status === 'docs-pending') c.status = 'processing';
+        notify([c.assignee, c.createdBy], `Documents uploaded on ${c.applicant.name}; ready to verify`, c);
+      } else {
+        r.status = 'responded'; r.respondedAt = now(); r.comment = f.comment;
+        log(c, `Response to bank query uploaded${items.length ? ': ' + items.map(docLabel).join(', ') : ''}${f.comment ? ' (' + f.comment + ')' : ''}`);
+        notify([c.assignee, c.createdBy], `Response ready for the bank on ${c.applicant.name}; submit it on the bank portal`, c);
+      }
+      toast('Uploaded');
+    } });
+  },
+  resolveQuery(ds) {
+    const c = getCase(ds.case), r = c.requests.find((x) => x.id === ds.req);
+    r.status = 'done'; r.doneAt = now();
+    log(c, 'Response submitted on bank portal; query resolved');
+    if (!openReqs(c, 'query').length) c.status = 'review';
+    notify([c.createdBy, ...managerIds()], `Bank query resolved on ${c.applicant.name}`, c);
+    save(); toast('Query marked resolved'); render();
+  },
+  eligible(ds) {
+    const c = getCase(ds.case);
+    const notOk = c.docs.filter((d) => !['verified', 'superseded'].includes(d.status)).length, miss = missingDocs(c);
+    if (notOk || miss.length) { toast(`Verify every document first (${notOk} not verified${miss.length ? ', ' + miss.length + ' missing' : ''})`); return; }
+    modal({ title: 'Mark eligible', body: `<p>${esc(c.applicant.name)} is eligible for ${c.product} with ${bank(c.bankId).name}.</p><label class="field">Note (optional)<textarea name="reason"></textarea></label>`, submit: 'Mark eligible', onSubmit(f) { c.eligibility = { value: 'eligible', reason: f.reason, at: now() }; c.status = 'ready'; log(c, 'Marked eligible'); notify([c.createdBy, ...managerIds()], `${c.applicant.name} marked eligible for ${bank(c.bankId).name}`, c); } });
+  },
+  notEligible(ds) {
+    const c = getCase(ds.case);
+    modal({ title: 'Mark not eligible', body: `<label class="field">Reason<textarea name="reason" placeholder="For example: existing instalments too high for this bank"></textarea></label><p class="muted small">The Manager confirms before the case closes. The Sales Executive can copy it to another bank.</p>`, submit: 'Send for confirmation', danger: true, onSubmit(f) {
+      if (!f.reason) return 'Give a reason.';
+      c.eligibility = { value: 'not-eligible', reason: f.reason, at: now(), confirmed: false }; c.status = 'not-eligible';
+      log(c, `Marked not eligible: ${f.reason}`);
+      notify(managerIds(), `Please confirm: ${c.applicant.name} marked not eligible by ${me().name}`, c, true);
+      notify([c.createdBy], `${c.applicant.name} marked not eligible for ${bank(c.bankId).name}`, c, true);
+    } });
+  },
+  confirmNE(ds) { const c = getCase(ds.case); c.eligibility.confirmed = true; c.eligibility.confirmedBy = S.me; log(c, 'Not eligible confirmed; case closed'); notify([c.createdBy, c.assignee], `Not eligible confirmed for ${c.applicant.name}. You can copy the file to another bank.`, c, true); save(); render(); },
+  sendBack(ds) { const c = getCase(ds.case); c.status = 'processing'; c.eligibility = null; log(c, 'Sent back to processing by Manager'); notify([c.assignee], `${c.applicant.name} sent back to you for another look`, c); save(); render(); },
+  finalSet(ds) { const c = getCase(ds.case); modal({ title: 'Upload final document set', body: `<p>Upload the documents exactly as the ${esc(bank(c.bankId).name)} portal needs them (renamed or merged PDFs).</p><div class="note note--info">Prototype: confirm to record that the final set (${c.docs.filter((d) => d.status === 'verified').length} verified documents) is uploaded.</div>`, submit: 'Final set uploaded', onSubmit() { c.finalSet = true; log(c, 'Final document set uploaded for bank login'); } }); },
+  reference(ds) {
+    const c = getCase(ds.case), b = bank(c.bankId);
+    modal({ title: `Bank login: ${b.name}`, body: `<div class="form-grid"><label class="field full">Bank reference number<input name="ref" placeholder="As shown on the bank portal"></label><label class="field">Login date<input type="date" name="date" value="${dueIn(0)}"></label><label class="field">Branch or scheme code (optional)<input name="branch"></label></div><div class="note">On save, the CRM emails ${spocsFor(b, c.product).map((s) => `<b>${esc(s.name)}</b> (${esc(s.product)})`).join(', ')} and notifies everyone on the case.</div>`, submit: 'Save and email SPOC', onSubmit(f) {
+      if (!f.ref) return 'The bank reference number is required.';
+      c.bank = { ref: f.ref.trim(), loginDate: Date.parse(f.date) || now(), branch: f.branch, spocAt: now() };
+      c.status = 'review'; c.portalCheckedAt = now();
+      const sales = salesOf(c), be = user(c.assignee) || me();
+      spocsFor(b, c.product).forEach((s) => S.emails.unshift({ at: now(), to: `${s.name} <${s.email}>`, cc: `${be.name}, ${sales.name}`, subject: `New login: ${c.applicant.name}, ${c.product}, ${amt(c.amount)}, Ref ${c.bank.ref}`, body: `Dear ${s.name.split(' ')[0]},\n\nWe have logged the following file on your portal:\n\nCustomer: ${c.applicant.name}\nProduct: ${c.product}\nAmount: ${amt(c.amount)}\nBank reference number: ${c.bank.ref}\nLogin date: ${day(c.bank.loginDate)}${c.bank.branch ? '\nBranch / scheme: ' + c.bank.branch : ''}\nFinsol case number: ${c.id}\n\nFinsol contacts:\nBackend Executive: ${be.name}\nSales Executive: ${sales.name}\n\nRegards,\nFinsol Processing Team`, spoc: true, caseId: c.id }));
+      log(c, `Logged in with bank, reference ${c.bank.ref}; SPOC emailed`);
+      notify([c.createdBy, c.assignee, ...managerIds()], `Logged in with ${b.name}: ${c.applicant.name}, ref ${c.bank.ref}`, c, true);
+      toast('Reference saved, bank SPOC emailed');
+    } });
+  },
+  checked(ds) { const c = getCase(ds.case); c.portalCheckedAt = now(); log(c, 'Bank portal checked: no change'); save(); toast('Marked as checked today'); render(); },
+  query(ds) {
+    const c = getCase(ds.case), owner = followUpOwner(c);
+    modal({ title: 'Log bank query (discrepancy)', wide: true, body: `<label class="field">Query as written by the bank<textarea name="note"></textarea></label><div class="field">Documents or clarifications needed${docChecks('items')}</div><div class="form-grid"><label class="field">Follow-up owner<select name="owner">${userOpts([salesOf(c), user(c.assignee)].filter(Boolean), owner)}</select></label><label class="field">Bank's due date<input type="date" name="due" value="${dueIn(2)}"></label></div>`, submit: 'Log query', onSubmit(f) {
+      if (!f.note) return 'Write the bank\'s query.';
+      requestItems(c, 'query', f._all('items'), f.note, f.owner, Date.parse(f.due)); toast('Query logged and assigned');
+    } });
+  },
+  decision(ds) {
+    const c = getCase(ds.case);
+    modal({ title: 'Record bank decision', wide: true, body: `<div class="pick" role="radiogroup"><label class="switch"><input type="radio" name="type" value="sanctioned" checked> Sanctioned</label><label class="switch"><input type="radio" name="type" value="rejected"> Rejected</label></div><div class="form-grid"><label class="field">Sanctioned amount (₹)<input name="amount" inputmode="numeric" value="${c.amount}"></label><label class="field">Interest rate (% a year)<input name="rate" inputmode="decimal"></label><label class="field">Tenure (years)<input name="tenure" inputmode="numeric" value="${c.tenure || ''}"></label><label class="field">Processing fee<input name="fee" placeholder="For example 0.5%"></label><label class="field full">Conditions (optional)<input name="conditions"></label><label class="field full">Rejection reason (if rejected)<textarea name="reason"></textarea></label><label class="field full">Sanction or rejection letter<input type="file" name="letter" accept="image/*,application/pdf"></label></div>`, submit: 'Save decision', onSubmit(f) {
+      if (f.type === 'rejected') { if (!f.reason) return 'Give the rejection reason from the bank.'; c.decision = { type: 'rejected', reason: f.reason, date: now() }; c.status = 'rejected'; }
+      else { if (!+f.amount || !f.rate) return 'Sanctioned amount and interest rate are required.'; c.decision = { type: 'sanctioned', amount: +f.amount, rate: +f.rate, tenure: +f.tenure, fee: f.fee, conditions: f.conditions, date: now(), letter: f.letter?.name || 'sanction_letter.pdf' }; c.status = 'sanctioned'; }
+      c.requests.forEach((r) => { if (r.status !== 'done') r.status = 'done'; });
+      log(c, f.type === 'rejected' ? `Bank rejected: ${f.reason}` : `Bank sanctioned ${amt(f.amount)} at ${f.rate}%`);
+      notify([c.createdBy, c.assignee, ...managerIds(), ...adminIds()], f.type === 'rejected' ? `Rejected: ${c.applicant.name} by ${bank(c.bankId).name}` : `Sanctioned: ${c.applicant.name}, ${amt(f.amount)} by ${bank(c.bankId).name}`, c, true);
+    } });
+  },
+  disburse(ds) {
+    const c = getCase(ds.case);
+    modal({ title: 'Record disbursal', body: `<div class="form-grid"><label class="field">Disbursed amount (₹)<input name="amount" inputmode="numeric" value="${c.decision?.amount || ''}"></label><label class="field">Disbursal date<input type="date" name="date" value="${dueIn(0)}"></label><label class="field">Loan account number<input name="lan"></label><label class="field">Full or partial<select name="mode"><option>Full</option><option>Partial (tranche)</option></select></label></div>`, submit: 'Save disbursal', onSubmit(f) {
+      if (!+f.amount || !f.lan) return 'Amount and loan account number are required.';
+      c.disbursal = { amount: +f.amount, date: Date.parse(f.date) || now(), lan: f.lan, mode: f.mode }; c.status = 'disbursed';
+      log(c, `Disbursed ${amt(f.amount)}, loan account ${f.lan}`);
+      notify([c.createdBy, c.assignee, ...managerIds(), ...adminIds()], `Disbursed: ${c.applicant.name}, ${amt(f.amount)}`, c, true);
+    } });
+  },
+  withdraw(ds) { const c = getCase(ds.case); modal({ title: 'Withdraw case', body: '<label class="field">Reason<textarea name="reason" placeholder="For example: customer took a loan elsewhere"></textarea></label>', submit: 'Withdraw', danger: true, onSubmit(f) { if (!f.reason) return 'Give a reason.'; c.status = 'withdrawn'; c.withdrawReason = f.reason; log(c, `Withdrawn: ${f.reason}`); notify([c.createdBy, c.assignee, ...managerIds()], `Withdrawn: ${c.applicant.name}`, c); } }); },
+  reopen(ds) { const c = getCase(ds.case); c.status = c.assignee ? 'processing' : 'submitted'; if (c.eligibility?.value === 'not-eligible') c.eligibility = null; log(c, 'Case reopened'); notify([c.createdBy, c.assignee], `Reopened: ${c.applicant.name}`, c); save(); render(); },
+  deleteCase(ds) { const c = getCase(ds.case); modal({ title: 'Delete case?', body: `<p>${c.id} and all its documents will be deleted. Only the Super Admin can do this. The deletion is kept in the audit log.</p>`, submit: 'Delete case', danger: true, onSubmit() { S.cases = S.cases.filter((x) => x !== c); log(null, `Deleted case ${c.id} (${c.applicant.name})`); location.hash = '#cases'; } }); },
+  copyBank(ds) {
+    const c = getCase(ds.case);
+    const used = [c.bankId, ...c.linked.map((id) => getCase(id)?.bankId)];
+    modal({ title: 'Copy to another bank', body: `<p class="muted small">Creates a linked case for ${esc(c.applicant.name)} with the same documents, routed to that bank's Backend Executives.</p><label class="field">Bank<select name="bankId">${BANKS.filter((b) => !used.includes(b.id)).map((b) => `<option value="${b.id}">${b.name}</option>`).join('')}</select></label><label class="field">Loan amount (₹)<input name="amount" value="${c.amount}"></label>`, submit: 'Create and submit', onSubmit(f) {
+      if (!f.bankId) return 'All banks already have a case for this customer.';
+      const id = `FS-2026-${String(++S.seq).padStart(5, '0')}`;
+      const n = JSON.parse(JSON.stringify(c));
+      Object.assign(n, { id, bankId: f.bankId, amount: +f.amount || c.amount, status: 'draft', createdAt: now(), assignee: null, pickedAt: null, requests: [], bank: {}, decision: null, disbursal: null, eligibility: null, finalSet: false, unrouted: false, linked: [c.id, ...c.linked], docs: c.docs.filter((d) => d.status !== 'superseded').map((d) => ({ ...d, status: 'uploaded', comment: '' })) });
+      c.linked.forEach((lid) => getCase(lid)?.linked.push(id)); c.linked.push(id);
+      S.cases.unshift(n); log(n, `Copied from ${c.id} for ${bank(f.bankId).name}`); log(c, `Copied to ${bank(f.bankId).name} as ${id}`);
+      submitCase(n, ''); location.hash = '#case/' + id; toast('Linked case created and submitted');
+    } });
+  },
+  followUpCase(ds) { const c = getCase(ds.case); modal({ title: 'Follow-up owner for this case', body: `<label class="field">Who chases the customer for documents and bank queries<select name="mode"><option value="">Use ${esc(salesOf(c).name)}'s default (${salesOf(c).followUp === 'sales' ? 'Sales Executive' : 'Backend Executive'})</option><option value="sales" ${c.followUpOwner === 'sales' ? 'selected' : ''}>Sales Executive follows up</option><option value="backend" ${c.followUpOwner === 'backend' ? 'selected' : ''}>Backend Executive follows up</option></select></label><label class="field">Reason<input name="reason"></label>`, submit: 'Save', onSubmit(f) { c.followUpOwner = f.mode || null; log(c, `Follow-up owner set to ${f.mode ? (f.mode === 'sales' ? 'Sales Executive' : 'Backend Executive') : 'default'}${f.reason ? ': ' + f.reason : ''}`); } }); },
+  tab(ds) { caseTab = ds.tab; render(); },
+  readAll() { S.notifications.forEach((n) => { if (n.userId === S.me) n.read = true; }); save(); render(); openDrawer(); },
+  openNotif(ds) { const n = S.notifications.find((x) => x.id === ds.id); n.read = true; save(); closeDrawer(); if (n.caseId && getCase(n.caseId)) location.hash = '#case/' + n.caseId; else render(); },
+  email(ds) { const e = S.emails[+ds.i]; modal({ title: e.subject, body: `<div class="email"><div><b>To:</b> ${esc(e.to)}</div>${e.cc ? `<div><b>Cc:</b> ${esc(e.cc)}</div>` : ''}<div><b>Sent:</b> ${dt(e.at)}</div><hr style="border:0;border-top:1px solid var(--line);width:100%"><pre>${esc(e.body)}</pre></div>`, submit: '' }); },
+  addSpoc(ds) { const b = bank(ds.bank); modal({ title: `Add SPOC for ${b.name}`, body: '<div class="form-grid"><label class="field">Name<input name="name"></label><label class="field">Email<input name="email" type="email"></label><label class="field full">Products covered<input name="product" value="All products"></label></div>', submit: 'Add', onSubmit(f) { if (!f.name || !/@/.test(f.email || '')) return 'Name and a valid email are needed.'; b.spocs.push({ name: f.name, email: f.email, product: f.product }); log(null, `Added SPOC ${f.name} for ${b.name}`); } }); },
+};
+
+function uploadDoc(c, type, file, reqId) {
+  const d = { id: 'd' + Math.random().toString(36).slice(2, 8), type, name: file ? file.name : `${type}_sample.pdf`, by: S.me, at: now(), status: 'uploaded', comment: '', scanning: true };
+  if (file && file.type.startsWith('image/')) { const fr = new FileReader(); fr.onload = () => { previews[d.id] = fr.result; render(); }; fr.readAsDataURL(file); }
+  c.docs.push(d); render();
+  setTimeout(() => {
+    d.scanning = false;
+    const n = c.status === 'draft' ? applyOcr(c, type) : 0;
+    log(c, `Uploaded ${docLabel(type)}${n ? `; OCR read ${n} field${n > 1 ? 's' : ''}` : ''}`);
+    save(); render();
+    toast(n ? `OCR read ${n} field${n > 1 ? 's' : ''} from ${docLabel(type)}. Please check them.` : `${docLabel(type)} uploaded`);
+  }, 1400);
+}
+
+/* =================== VIEWS =================== */
+let caseTab = 'overview';
+const NAV = [
+  ['dashboard', 'Dashboard', ['superadmin', 'admin', 'manager', 'sales', 'backend'], '<path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 7h6V4h-6z"/>'],
+  ['cases', 'Cases', ['superadmin', 'admin', 'manager', 'sales', 'backend'], '<path d="M4 7h16v13H4zM9 7V4h6v3"/>'],
+  ['queue', 'Processing queue', ['backend', 'manager', 'admin', 'superadmin'], '<path d="M4 6h16M4 12h16M4 18h10"/>'],
+  ['tasks', 'My tasks', ['sales', 'backend'], '<path d="M9 11l3 3 8-8M20 12v7H4V5h11"/>'],
+  ['sep', 'Administration', ['manager', 'admin', 'superadmin']],
+  ['allocation', 'Bank allocation', ['admin', 'superadmin'], '<path d="M3 21h18M5 10v8M10 10v8M14 10v8M19 10v8M3 9l9-5 9 5z"/>'],
+  ['team', 'Team and follow-up', ['manager', 'admin', 'superadmin'], '<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6M17 11a3 3 0 100-6M18 14c2 .5 4 2.5 4 6"/>'],
+  ['banks', 'Banks and SPOCs', ['admin', 'superadmin'], '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'],
+  ['emails', 'Emails sent', ['admin', 'superadmin'], '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>'],
+  ['audit', 'Audit log', ['manager', 'admin', 'superadmin'], '<path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/>'],
+];
+const visibleCases = () => S.cases.filter((c) => canSee(c));
+const queueCases = () => S.cases.filter((c) => inMyQueue(c));
+const myTasks = () => S.cases.filter((c) => canSee(c)).flatMap((c) => c.requests.filter((r) => r.status !== 'done' && (r.owner === S.me || (r.status === 'responded' && c.assignee === S.me))).map((r) => ({ c, r })));
+
+function renderSide() {
+  const u = me(), route = (location.hash.slice(1) || 'dashboard').split('/')[0];
+  const counts = { queue: u.role === 'backend' ? queueCases().length : S.cases.filter((c) => c.unrouted && c.status === 'submitted').length, tasks: myTasks().length };
+  $('#side').innerHTML = `<div class="brand"><span class="brand__mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 20V5h12M6 12h9"/></svg></span><span>Finsol<small>Loan CRM</small></span></div>
+    ${NAV.filter((n) => n[2].includes(u.role)).map(([id, label, , ic]) => id === 'sep' ? `<div class="nav-sep">${label}</div>` : `<a class="nav-item ${route === id || (route === 'case' && id === 'cases') ? 'active' : ''}" href="#${id}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg>${label}${counts[id] ? `<span class="count">${counts[id]}</span>` : ''}</a>`).join('')}
+    <div class="side__foot">Signed in as <b>${esc(u.name)}</b><br>${ROLES[u.role]}${u.label ? ' · ' + u.label : ''}</div>`;
+}
+
+function caseRow(c, cols = 'full') {
+  const b = bank(c.bankId), be = user(c.assignee), se = salesOf(c);
+  return `<tr class="link" data-href="#case/${c.id}"><td><b class="num">${c.id}</b>${c.linked.length ? ` <span class="tag">linked</span>` : ''}</td><td>${esc(c.applicant.name || '(name pending)')}</td><td>${c.product}</td><td>${b ? b.name : '—'}</td><td class="num">${amt(c.amount)}</td><td>${chip(c.status, c.status === 'not-eligible' && !c.eligibility?.confirmed ? ' · awaiting manager' : '')}${c.unrouted && c.status === 'submitted' ? ' <span class="chip chip--bad">unrouted</span>' : ''}</td>${cols === 'full' ? `<td>${se.name}</td><td>${be ? be.name : '<span class="muted">—</span>'}</td>` : ''}<td class="muted small">${ago(lastTouch(c))}</td></tr>`;
+}
+const lastTouch = (c) => Math.max(c.createdAt, ...(S.audit.filter((a) => a.caseId === c.id).map((a) => a.at)));
+const caseTable = (list, cols = 'full') => list.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Customer</th><th>Product</th><th>Bank</th><th>Amount</th><th>Status</th>${cols === 'full' ? '<th>Sales</th><th>Backend</th>' : ''}<th>Updated</th></tr></thead><tbody>${list.map((c) => caseRow(c, cols)).join('')}</tbody></table></div>` : '<p class="empty">No cases here.</p>';
+
+function slaBreaches(list) {
+  const out = [];
+  list.forEach((c) => {
+    if (c.status === 'submitted' && hoursSince(c.submittedAt) > SLA_H.pickup) out.push({ c, what: `Not picked up for ${Math.round(hoursSince(c.submittedAt))} h (target ${SLA_H.pickup} h)` });
+    if (c.status === 'processing' && c.pickedAt && hoursSince(c.pickedAt) > SLA_H.verify) out.push({ c, what: `In verification for ${Math.round(hoursSince(c.pickedAt))} h (target ${SLA_H.verify} h)` });
+    if (c.status === 'ready' && c.eligibility && hoursSince(c.eligibility.at) > SLA_H.login) out.push({ c, what: `Waiting for bank login ${Math.round(hoursSince(c.eligibility.at))} h` });
+    c.requests.filter((r) => r.status === 'open' && r.due < now()).forEach((r) => out.push({ c, what: `${r.kind === 'docs' ? 'Document request' : 'Bank query'} overdue (owner ${user(r.owner).name})` }));
+    if (['review', 'query'].includes(c.status) && hoursSince(c.portalCheckedAt || 0) > 24) out.push({ c, what: 'Bank portal not checked in the last day' });
+  });
+  return out;
+}
+
+function viewDashboard() {
+  const u = me(), list = visibleCases();
+  const count = (st) => list.filter((c) => st.includes(c.status)).length;
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+  const disbMonth = list.filter((c) => c.disbursal && c.disbursal.date >= monthStart);
+  const head = `<div class="page-head"><div><h1>Good ${new Date().getHours() < 12 ? 'morning' : 'afternoon'}, ${esc(u.name.split(' ')[0])}</h1><p class="muted">${ROLES[u.role]}${u.role === 'backend' ? ' · banks: ' + myBanks(u).map((b) => `${bank(b).name} (${S.allocation[u.id][b]})`).join(', ') : ''}</p></div>${isRole('sales', 'manager', 'admin', 'superadmin') ? '<button class="btn btn--primary" data-act="newCase">+ New case</button>' : ''}</div>`;
+  const tasks = myTasks();
+  const taskCard = `<div class="card"><div class="card__head"><h2>My tasks</h2><a href="#tasks" class="small">See all</a></div>${tasks.length ? `<div style="display:grid;gap:10px">${tasks.slice(0, 5).map(({ c, r }) => `<a class="req ${r.status === 'open' ? 'req--open' : ''}" href="#case/${c.id}" style="text-decoration:none;color:inherit"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${esc(c.applicant.name)}</b><span class="chip ${r.due < now() ? 'chip--bad' : 'chip--warn'}">${r.status === 'responded' ? 'submit on bank portal' : 'due ' + day(r.due)}</span></div><span class="small muted">${r.kind === 'docs' ? 'Documents' : 'Bank query'}: ${r.items.map(docLabel).join(', ') || esc(r.note)}</span></a>`).join('')}</div>` : '<p class="empty">Nothing waiting on you.</p>'}</div>`;
+  if (u.role === 'sales') {
+    return `${head}<div class="kpis"><a class="kpi" href="#cases"><b>${count(['draft'])}</b><span>Drafts to finish</span></a><a class="kpi" href="#cases"><b>${count(['submitted', 'processing', 'ready'])}</b><span>With processing</span></a><a class="kpi ${tasks.length ? 'kpi--warn' : ''}" href="#tasks"><b>${tasks.length}</b><span>Waiting on me</span></a><a class="kpi" href="#cases"><b>${count(['review', 'query'])}</b><span>With the bank</span></a><div class="kpi"><b>${amt(disbMonth.reduce((s, c) => s + c.disbursal.amount, 0))}</b><span>Disbursed this month</span></div></div><div class="grid2">${taskCard}<div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>My recent cases</h2><a href="#cases" class="small">All cases</a></div>${caseTable(list.slice(0, 6), 'short')}</div></div>`;
+  }
+  if (u.role === 'backend') {
+    const mine = list.filter((c) => c.assignee === u.id), q = queueCases();
+    const notChecked = mine.filter((c) => ['review', 'query'].includes(c.status) && hoursSince(c.portalCheckedAt || 0) > 24);
+    return `${head}<div class="kpis"><a class="kpi ${q.length ? 'kpi--warn' : ''}" href="#queue"><b>${q.length}</b><span>In my queue</span></a><a class="kpi" href="#cases"><b>${mine.filter((c) => ['processing', 'docs-pending', 'ready'].includes(c.status)).length}</b><span>In processing</span></a><a class="kpi" href="#tasks"><b>${tasks.length}</b><span>Tasks on me</span></a><a class="kpi" href="#cases"><b>${mine.filter((c) => ['review', 'query'].includes(c.status)).length}</b><span>With banks</span></a><div class="kpi ${notChecked.length ? 'kpi--bad' : ''}"><b>${notChecked.length}</b><span>Bank portal not checked today</span></div></div>
+      <div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>Queue for my banks</h2><a href="#queue" class="small">Open queue</a></div>${caseTable(q, 'short')}</div>
+      <div class="grid2">${taskCard}<div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>My cases</h2></div>${caseTable(mine.filter((c) => OPEN.includes(c.status) || c.status === 'not-eligible').slice(0, 6), 'short')}</div></div>`;
+  }
+  const max = Math.max(1, ...Object.keys(STATUS).map((s) => count([s])));
+  const sla = slaBreaches(list);
+  const unrouted = list.filter((c) => c.unrouted && c.status === 'submitted');
+  const confirmNE = list.filter((c) => c.status === 'not-eligible' && !c.eligibility?.confirmed);
+  const workload = S.users.filter((x) => x.role === 'backend').map((x) => [x, list.filter((c) => c.assignee === x.id && OPEN.includes(c.status)).length]);
+  const bankRows = BANKS.map((b) => { const bc = list.filter((c) => c.bankId === b.id); return `<tr><td>${b.name}</td><td class="num">${bc.filter((c) => c.bank.ref).length}</td><td class="num">${bc.filter((c) => ['sanctioned', 'disbursed'].includes(c.status)).length}</td><td class="num">${bc.filter((c) => c.status === 'rejected').length}</td><td class="num">${amt(bc.filter((c) => c.disbursal).reduce((s, c) => s + c.disbursal.amount, 0))}</td></tr>`; }).join('');
+  return `${head}<div class="kpis"><a class="kpi" href="#cases"><b>${list.filter((c) => OPEN.includes(c.status)).length}</b><span>Open cases</span></a><a class="kpi ${unrouted.length ? 'kpi--bad' : ''}" href="#queue"><b>${unrouted.length}</b><span>Unrouted</span></a><div class="kpi ${confirmNE.length ? 'kpi--warn' : ''}"><b>${confirmNE.length}</b><span>Not-eligible to confirm</span></div><div class="kpi ${sla.length ? 'kpi--bad' : ''}"><b>${sla.length}</b><span>SLA alerts</span></div><div class="kpi"><b>${amt(disbMonth.reduce((s, c) => s + c.disbursal.amount, 0))}</b><span>Disbursed this month</span></div></div>
+    <div class="grid2"><div class="card"><div class="card__head"><h2>Pipeline by status</h2></div><div class="bar-list">${Object.keys(STATUS).map((s) => `<a class="bar-row" href="#cases"><span>${STATUS[s].label}</span><span class="bar"><i style="width:${(count([s]) / max) * 100}%;background:${STATUS[s].tone === 'good' ? 'var(--good)' : STATUS[s].tone === 'bad' ? 'var(--bad)' : STATUS[s].tone === 'warn' ? 'var(--warn)' : 'var(--brand)'}"></i></span><b class="num">${count([s])}</b></a>`).join('')}</div></div>
+    <div class="card"><div class="card__head"><h2>Needs attention</h2></div>${[...confirmNE.map((c) => ({ c, what: 'Confirm not eligible: ' + c.eligibility.reason })), ...unrouted.map((c) => ({ c, what: 'No Backend Executive for ' + bank(c.bankId).name })), ...sla].length ? `<div style="display:grid;gap:8px">${[...confirmNE.map((c) => ({ c, what: 'Confirm not eligible: ' + c.eligibility.reason })), ...unrouted.map((c) => ({ c, what: 'No Backend Executive for ' + bank(c.bankId).name })), ...sla].slice(0, 8).map(({ c, what }) => `<a href="#case/${c.id}" class="req req--open" style="text-decoration:none;color:inherit"><b>${esc(c.applicant.name)} · ${c.id}</b><span class="small muted">${esc(what)}</span></a>`).join('')}</div>` : '<p class="empty">All on track.</p>'}</div></div>
+    <div class="grid2"><div class="card"><div class="card__head"><h2>Workload by Backend Executive</h2></div><div class="bar-list">${workload.map(([x, n]) => `<div class="bar-row"><span>${x.name}${x.leave ? ' (on leave)' : ''}</span><span class="bar"><i style="width:${(n / Math.max(1, ...workload.map((w) => w[1]))) * 100}%"></i></span><b class="num">${n}</b></div>`).join('')}</div></div>
+    <div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>By bank</h2></div><div class="table-wrap"><table class="tbl"><thead><tr><th>Bank</th><th>Logins</th><th>Sanctioned</th><th>Rejected</th><th>Disbursed</th></tr></thead><tbody>${bankRows}</tbody></table></div></div></div>`;
+}
+
+let filter = { q: '', status: '', bank: '' };
+function viewCases() {
+  let list = visibleCases();
+  if (filter.q) { const q = filter.q.toLowerCase(); list = list.filter((c) => [c.id, c.applicant.name, c.applicant.mobile, c.applicant.pan].some((v) => String(v || '').toLowerCase().includes(q))); }
+  if (filter.status) list = list.filter((c) => c.status === filter.status);
+  if (filter.bank) list = list.filter((c) => c.bankId === filter.bank);
+  return `<div class="page-head"><div><h1>Cases</h1><p class="muted">${me().role === 'sales' ? 'Cases you created' : me().role === 'backend' ? 'Cases for your allocated banks' : 'All cases'}</p></div>${isRole('sales', 'manager', 'admin', 'superadmin') ? '<button class="btn btn--primary" data-act="newCase">+ New case</button>' : ''}</div>
+    <div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><label class="field" style="flex:2;min-width:200px">Search<input id="fq" value="${esc(filter.q)}" placeholder="Case number, name, mobile or PAN"></label><label class="field" style="flex:1;min-width:160px">Status<select id="fs"><option value="">All statuses</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${filter.status === k ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label><label class="field" style="flex:1;min-width:160px">Bank<select id="fb"><option value="">All banks</option>${BANKS.map((b) => `<option value="${b.id}" ${filter.bank === b.id ? 'selected' : ''}>${b.name}</option>`).join('')}</select></label></div>
+    <div class="card card--flush">${caseTable(list)}</div>`;
+}
+
+function viewQueue() {
+  const u = me();
+  if (u.role === 'backend') {
+    const q = queueCases();
+    return `<div class="page-head"><div><h1>Processing queue</h1><p class="muted">Submitted cases for ${myBanks(u).map((b) => bank(b).name).join(', ')}. Oldest first. Pick a case to make it yours.</p></div></div>
+      <div class="card card--flush">${q.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Customer</th><th>Product</th><th>Bank</th><th>Amount</th><th>Waiting</th><th></th></tr></thead><tbody>${q.sort((a, b) => a.submittedAt - b.submittedAt).map((c) => `<tr><td><a href="#case/${c.id}"><b>${c.id}</b></a></td><td>${esc(c.applicant.name)}</td><td>${c.product}</td><td>${bank(c.bankId).name}</td><td class="num">${amt(c.amount)}</td><td><span class="chip ${hoursSince(c.submittedAt) > SLA_H.pickup ? 'chip--bad' : 'chip--info'}">${ago(c.submittedAt).replace(' ago', '')}</span></td><td><button class="btn btn--brand btn--sm" data-act="assignMe" data-case="${c.id}">Assign to me</button></td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Queue is empty. New cases for your banks appear here.</p>'}</div>`;
+  }
+  const waiting = S.cases.filter((c) => c.status === 'submitted');
+  return `<div class="page-head"><div><h1>Processing queue</h1><p class="muted">Every submitted case not yet picked up. Unrouted cases have no available Backend Executive for their bank.</p></div></div>
+    <div class="card card--flush">${waiting.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Customer</th><th>Bank</th><th>Visible to</th><th>Waiting</th><th></th></tr></thead><tbody>${waiting.map((c) => { const pool = S.users.filter((x) => inMyQueue(c, x)); return `<tr><td><a href="#case/${c.id}"><b>${c.id}</b></a></td><td>${esc(c.applicant.name)}</td><td>${bank(c.bankId).name}</td><td>${pool.length ? pool.map((x) => x.name).join(', ') : '<span class="chip chip--bad">unrouted</span>'}</td><td>${ago(c.submittedAt).replace(' ago', '')}</td><td><button class="btn btn--ghost btn--sm" data-act="reassign" data-case="${c.id}">Assign</button></td></tr>`; }).join('')}</tbody></table></div>` : '<p class="empty">No cases waiting for pickup.</p>'}</div>`;
+}
+
+function viewTasks() {
+  const t = myTasks();
+  return `<div class="page-head"><div><h1>My tasks</h1><p class="muted">Document requests and bank queries where you are the follow-up owner, plus responses waiting to go on a bank portal.</p></div></div>
+    ${t.length ? t.map(({ c, r }) => `<div class="card req ${r.status === 'open' ? 'req--open' : ''}"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>${esc(c.applicant.name)}</b> <span class="muted small">· <a href="#case/${c.id}">${c.id}</a> · ${c.product} · ${bank(c.bankId).name}</span></div><span class="chip ${r.due < now() ? 'chip--bad' : 'chip--warn'}">${r.kind === 'docs' ? 'Documents' : 'Bank query'} · due ${day(r.due)}</span></div><p class="small">${esc(r.note || '')}</p><p class="small"><b>Needed:</b> ${r.items.map(docLabel).join(', ') || 'clarification'}</p><p class="small muted">Customer mobile: <b class="num" style="user-select:all">${c.applicant.mobile}</b></p><div class="actions">${r.status === 'open' ? `<button class="btn btn--primary btn--sm" data-act="respond" data-case="${c.id}" data-req="${r.id}">${r.kind === 'docs' ? 'Upload documents' : 'Upload response'}</button>` : ''}${r.status === 'responded' && c.assignee === S.me ? `<button class="btn btn--brand btn--sm" data-act="resolveQuery" data-case="${c.id}" data-req="${r.id}">Submitted on bank portal</button>` : ''}<a class="btn btn--ghost btn--sm" href="#case/${c.id}">Open case</a></div></div>`).join('') : '<div class="card"><p class="empty">Nothing waiting on you.</p></div>'}`;
+}
+
+/* ---------- case page ---------- */
+function nextStep(c) {
+  const be = user(c.assignee), owner = user(followUpOwner(c)), b = bank(c.bankId);
+  switch (c.status) {
+    case 'draft': return ['Sales Executive', 'Upload documents, check the details OCR read, add the bank and amount, then submit.'];
+    case 'submitted': return c.unrouted ? ['Manager', `No Backend Executive is available for ${b.name}. Assign one.`] : ['Backend Executive', `Waiting for an executive allocated to ${b.name} to pick it up (target ${SLA_H.pickup} hours).`];
+    case 'processing': return [be?.name || 'Backend Executive', 'Verify each document, then mark eligible or request documents.'];
+    case 'docs-pending': return [user(openReqs(c, 'docs')[0]?.owner)?.name || owner.name, 'Collect the requested documents from the customer and upload them on the request.'];
+    case 'not-eligible': return c.eligibility?.confirmed ? ['Sales Executive', 'Closed as not eligible. Copy the file to another bank if suitable.'] : ['Manager', 'Confirm not eligible, or send the case back to processing.'];
+    case 'ready': return [be?.name || 'Backend Executive', c.finalSet ? `Log the file on the ${b.name} portal and enter the reference number.` : 'Upload the final document set for the bank.'];
+    case 'review': return [be?.name || 'Backend Executive', 'Check the bank portal every working day. Log any query or record the decision.'];
+    case 'query': { const r = openReqs(c, 'query')[0]; return r?.status === 'responded' ? [be?.name, 'Submit the response on the bank portal and mark it resolved.'] : [user(r?.owner)?.name || owner.name, "Get the answers or documents for the bank's query and upload them."]; }
+    case 'sanctioned': return [be?.name || 'Backend Executive', 'Record the disbursal when the bank pays out.'];
+    default: return ['', 'This case is closed.'];
+  }
+}
+
+function caseActions(c) {
+  const u = me(), b = [];
+  const btn = (act, label, cls = 'btn--ghost', extra = '') => `<button class="btn ${cls}" data-act="${act}" data-case="${c.id}" ${extra}>${label}</button>`;
+  const ownSales = u.role === 'sales' && c.createdBy === u.id;
+  if (c.status === 'draft' && (ownSales || isMgr())) b.push(btn('submit', 'Submit case', 'btn--primary'));
+  if (inMyQueue(c)) b.push(btn('assignMe', 'Assign to me', 'btn--primary'));
+  if (c.status === 'processing' && canWork(c) && u.role !== 'sales') { b.push(btn('eligible', 'Mark eligible', 'btn--primary'), btn('requestDocs', 'Request documents'), btn('notEligible', 'Not eligible', 'btn--danger')); }
+  if (c.status === 'docs-pending' && canWork(c) && u.role !== 'sales') b.push(btn('requestDocs', 'Request more documents'));
+  if (c.status === 'not-eligible' && !c.eligibility?.confirmed && isMgr()) b.push(btn('confirmNE', 'Confirm not eligible', 'btn--danger'), btn('sendBack', 'Send back to processing'));
+  if (c.status === 'ready' && canWork(c) && u.role !== 'sales') b.push(c.finalSet ? btn('reference', 'Enter bank reference number', 'btn--primary') : btn('finalSet', 'Upload final document set', 'btn--primary'));
+  if (['review', 'query'].includes(c.status) && canWork(c) && u.role !== 'sales') b.push(btn('decision', 'Record bank decision', 'btn--primary'), btn('query', 'Log bank query'), btn('checked', 'Portal checked, no change'));
+  if (c.status === 'sanctioned' && canWork(c) && u.role !== 'sales') b.push(btn('disburse', 'Record disbursal', 'btn--primary'));
+  if (['submitted', 'processing', 'docs-pending', 'ready', 'review', 'query'].includes(c.status) && isMgr()) b.push(btn('reassign', c.assignee ? 'Reassign' : 'Assign'));
+  if (c.status !== 'draft' && (ownSales || isMgr())) b.push(btn('copyBank', 'Copy to another bank'));
+  if ([...OPEN, 'draft'].includes(c.status) && (isMgr() || isAssignee(c) || (c.status === 'draft' && ownSales))) b.push(btn('withdraw', 'Withdraw', 'btn--danger'));
+  if ((['rejected', 'disbursed', 'withdrawn'].includes(c.status) || (c.status === 'not-eligible' && c.eligibility?.confirmed)) && isRole('admin', 'superadmin')) b.push(btn('reopen', 'Reopen'));
+  if (isRole('superadmin')) b.push(btn('deleteCase', 'Delete case', 'btn--danger'));
+  return b.join('');
+}
+
+function draftEditor(c) {
+  const a = c.applicant, canEdit = c.createdBy === S.me || isMgr();
+  const types = [...new Set([...(REQUIRED[c.product] || []), 'address', 'itr', 'photo'])];
+  const docTile = (type) => {
+    const ds = c.docs.filter((d) => d.type === type);
+    const req = (REQUIRED[c.product] || []).includes(type);
+    if (!ds.length) return `<div class="doc doc--missing"><div class="doc__thumb"><span class="muted small">Not uploaded</span></div><div class="doc__name">${docLabel(type)} ${req ? '<span class="tag">required</span>' : ''}</div>${canEdit ? `<div class="doc__actions"><button class="btn btn--ghost btn--sm" data-act="pickFile" data-case="${c.id}" data-type="${type}">Upload file</button><button class="btn btn--ghost btn--sm" data-act="sample" data-case="${c.id}" data-type="${type}">Use sample</button></div>` : ''}</div>`;
+    return ds.map((d) => `<div class="doc"><div class="doc__thumb ${d.scanning ? 'scanning' : ''}">${previews[d.id] ? `<img src="${previews[d.id]}" alt="">` : docMock(type)}</div><div class="doc__name">${docLabel(type)}</div><span class="tiny muted">${esc(d.name)} · ${d.scanning ? 'reading with OCR…' : ago(d.at)}</span></div>`).join('');
+  };
+  const fieldHtml = ([k, label]) => {
+    const meta = c.ocr[k], conf = conflicts(c, k);
+    const src = meta?.source === 'manual' ? '<span class="src src--manual">typed or corrected</span>' : meta?.source ? `<span class="src src--${meta.conf}">${meta.conf === 'check' ? 'Check · ' : 'OCR · '}from ${docLabel(meta.source)}</span>` : '<span class="src src--manual">&nbsp;</span>';
+    const val = k === 'aadhaar' && a[k] ? a[k] : a[k] ?? '';
+    return `<div class="ocr-field ${k === 'address' ? 'full' : ''}"><label class="field">${label}${k === 'aadhaar' ? ' <span class="tiny muted">(full number never stored)</span>' : ''}<input data-field="${k}" data-case="${c.id}" value="${esc(val)}" ${k === 'dob' ? 'type="date"' : ''} class="${meta?.conf === 'check' && meta?.source !== 'manual' ? 'check' : ''}" ${canEdit ? '' : 'disabled'} ${k === 'aadhaar' ? 'maxlength="4" inputmode="numeric"' : ''}></label>${src}${conf ? `<div class="note note--warn small">Documents disagree. Pick the correct value:<div class="pick" style="margin-top:6px">${conf.map((v) => `<button type="button" data-pickval="${esc(v.value)}" data-field="${k}" data-case="${c.id}" aria-pressed="${norm(v.value) === norm(a[k])}">${esc(v.value)} <span class="tiny muted">(${docLabel(v.src)})</span></button>`).join('')}</div></div>` : ''}</div>`;
+  };
+  const miss = missingDocs(c);
+  return `<div class="grid2" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)">
+    <div class="card"><div class="card__head"><h2>1. Upload documents</h2><span class="small muted">OCR reads each one</span></div><div class="doc-grid">${types.map(docTile).join('')}</div></div>
+    <div class="card"><div class="card__head"><h2>2. Check customer details</h2><span class="small muted">Amber = please check</span></div><div class="form-grid">${OCR_FIELDS.map(fieldHtml).join('')}</div></div>
+  </div>
+  <div class="card"><div class="card__head"><h2>3. Loan details</h2></div><div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <label class="field">Product<select data-loan="product" data-case="${c.id}" ${canEdit ? '' : 'disabled'}>${PRODUCTS.map((p) => `<option ${p === c.product ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
+    <label class="field">Bank applied for<select data-loan="bankId" data-case="${c.id}" ${canEdit ? '' : 'disabled'}><option value="">Choose bank</option>${BANKS.map((b) => `<option value="${b.id}" ${b.id === c.bankId ? 'selected' : ''}>${b.name}</option>`).join('')}</select></label>
+    <label class="field">Loan amount (₹)<input data-loan="amount" data-case="${c.id}" inputmode="numeric" value="${esc(c.amount)}" ${canEdit ? '' : 'disabled'}></label>
+    <label class="field">Tenure (years)<input data-loan="tenure" data-case="${c.id}" inputmode="numeric" value="${esc(c.tenure)}" ${canEdit ? '' : 'disabled'}></label>
+    <label class="field" style="grid-column:1/-1">Purpose<input data-loan="purpose" data-case="${c.id}" value="${esc(c.purpose)}" ${canEdit ? '' : 'disabled'}></label>
+  </div>
+  <div class="note" style="margin-top:14px"><b>Document checklist for ${c.product}:</b><ul class="checklist" style="margin-top:8px">${(REQUIRED[c.product] || []).map((t) => `<li><span class="tick ${c.docs.some((d) => d.type === t) ? 'tick--yes' : 'tick--no'}">${c.docs.some((d) => d.type === t) ? '✓' : ''}</span>${docLabel(t)}</li>`).join('')}</ul></div>
+  <div class="actions" style="margin-top:14px;justify-content:space-between;align-items:center"><span class="small muted">${miss.length ? `${miss.length} required document${miss.length > 1 ? 's' : ''} missing` : 'All required documents uploaded'} · saved automatically</span>${canEdit ? `<button class="btn btn--primary" data-act="submit" data-case="${c.id}">Submit case</button>` : ''}</div></div>`;
+}
+
+function tabOverview(c) {
+  const a = c.applicant;
+  const row = (k, l) => `<dt>${l}</dt><dd>${esc(k === 'aadhaar' && a[k] ? 'XXXX XXXX ' + a[k] : ['netSalary', 'grossSalary', 'annualIncome', 'avgBalance'].includes(k) ? inr(a[k]) : k === 'dob' && a[k] ? day(Date.parse(a[k])) : a[k] || '—')}${c.ocr[k]?.source && c.ocr[k].source !== 'manual' ? ` <span class="tag">OCR</span>` : ''}</dd>`;
+  return `<div class="grid2"><div class="card"><h3 style="margin-bottom:12px">Applicant</h3><dl class="kv">${OCR_FIELDS.map(([k, l]) => row(k, l)).join('')}</dl></div>
+    <div style="display:grid;gap:20px;align-content:start"><div class="card"><h3 style="margin-bottom:12px">Loan request</h3><dl class="kv"><dt>Product</dt><dd>${c.product}</dd><dt>Bank</dt><dd>${bank(c.bankId)?.name || '—'}</dd><dt>Amount</dt><dd>${amt(c.amount)}</dd><dt>Tenure</dt><dd>${c.tenure || '—'} years</dd><dt>Purpose</dt><dd>${esc(c.purpose || '—')}</dd>${c.override ? `<dt>Submitted with</dt><dd>missing items: ${esc(c.override)}</dd>` : ''}</dl></div>
+    <div class="card"><h3 style="margin-bottom:12px">Processing</h3><dl class="kv"><dt>Eligibility</dt><dd>${c.eligibility ? (c.eligibility.value === 'eligible' ? 'Eligible' : 'Not eligible' + (c.eligibility.confirmed ? ' (confirmed)' : ' (awaiting manager)')) + (c.eligibility.reason ? ': ' + esc(c.eligibility.reason) : '') : '—'}</dd><dt>Final set uploaded</dt><dd>${c.finalSet ? 'Yes' : 'No'}</dd><dt>Follow-up owner</dt><dd>${user(followUpOwner(c)).name}${c.followUpOwner ? ' (set on this case)' : ' (default)'} ${(isMgr() || isAssignee(c)) && c.status !== 'draft' ? `<button class="btn btn--ghost btn--sm" data-act="followUpCase" data-case="${c.id}">Change</button>` : ''}</dd>${c.withdrawReason ? `<dt>Withdrawn</dt><dd>${esc(c.withdrawReason)}</dd>` : ''}</dl></div></div></div>`;
+}
+
+function tabDocs(c) {
+  const verifying = ['processing', 'docs-pending'].includes(c.status) && canWork(c) && me().role !== 'sales';
+  const canDownload = me().role !== 'sales';
+  const docs = c.docs.filter((d) => d.status !== 'superseded');
+  const miss = missingDocs(c);
+  const st = { uploaded: ['to verify', 'info'], verified: ['Verified', 'good'], replace: ['Needs replacement', 'bad'] };
+  return `${c.override ? `<div class="note note--warn small">Submitted with missing items. Sales Executive's reason: ${esc(c.override)}</div>` : ''}
+    <div class="doc-grid">${docs.map((d) => `<div class="doc"><div class="doc__thumb ${d.scanning ? 'scanning' : ''}">${previews[d.id] ? `<img src="${previews[d.id]}" alt="">` : docMock(d.type)}</div><div style="display:flex;justify-content:space-between;gap:6px;align-items:start"><span class="doc__name">${docLabel(d.type)}</span><span class="chip chip--${st[d.status]?.[1] || 'info'}">${st[d.status]?.[0] || d.status}</span></div><span class="tiny muted">${esc(d.name)} · ${user(d.by)?.name || ''} · ${ago(d.at)}</span>${d.comment ? `<span class="small" style="color:var(--bad)">${esc(d.comment)}</span>` : ''}<div class="doc__actions">${verifying && d.status !== 'verified' ? `<button class="btn btn--brand btn--sm" data-act="verifyDoc" data-case="${c.id}" data-doc="${d.id}">Verify</button>` : ''}${verifying && d.status !== 'replace' ? `<button class="btn btn--ghost btn--sm" data-act="rejectDoc" data-case="${c.id}" data-doc="${d.id}">Needs replacement</button>` : ''}${canDownload ? `<button class="btn btn--ghost btn--sm" data-act="download" data-case="${c.id}" data-doc="${d.id}">Download</button>` : '<span class="tiny muted">View only</span>'}${isRole('superadmin') ? `<button class="btn btn--danger btn--sm" data-act="deleteDoc" data-case="${c.id}" data-doc="${d.id}">Delete</button>` : ''}</div></div>`).join('')}
+    ${miss.map((t) => `<div class="doc doc--missing"><div class="doc__thumb"><span class="muted small">Missing</span></div><div class="doc__name">${docLabel(t)} <span class="tag">required</span></div></div>`).join('')}</div>`;
+}
+
+function tabRequests(c) {
+  if (!c.requests.length) return '<p class="empty">No document requests or bank queries on this case.</p>';
+  return c.requests.map((r) => {
+    const canResp = r.status === 'open' && (r.owner === S.me || isMgr());
+    const canResolve = r.kind === 'query' && r.status === 'responded' && canWork(c) && me().role !== 'sales';
+    return `<div class="req ${r.status !== 'done' ? 'req--open' : ''}"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b>${r.kind === 'docs' ? 'Document request' : 'Bank query'}</b><span class="chip ${r.status === 'done' ? 'chip--good' : r.due < now() ? 'chip--bad' : 'chip--warn'}">${r.status === 'done' ? 'Closed ' + day(r.doneAt) : r.status === 'responded' ? 'Response uploaded' : 'Open · due ' + day(r.due)}</span></div>${r.note ? `<p class="small">${esc(r.note)}</p>` : ''}<p class="small"><b>Needed:</b> ${r.items.map(docLabel).join(', ') || 'clarification'}</p><p class="small muted">Raised by ${user(r.by)?.name} on ${dt(r.createdAt)} · follow-up owner <b>${user(r.owner)?.name}</b>${r.comment ? ' · reply: ' + esc(r.comment) : ''}</p>${canResp || canResolve ? `<div class="actions">${canResp ? `<button class="btn btn--primary btn--sm" data-act="respond" data-case="${c.id}" data-req="${r.id}">${r.kind === 'docs' ? 'Upload documents' : 'Upload response'}</button>` : ''}${canResolve ? `<button class="btn btn--brand btn--sm" data-act="resolveQuery" data-case="${c.id}" data-req="${r.id}">Submitted on bank portal</button>` : ''}</div>` : ''}</div>`;
+  }).join('');
+}
+
+function tabBank(c) {
+  const b = bank(c.bankId), emails = S.emails.map((e, i) => ({ e, i })).filter(({ e }) => e.spoc && e.caseId === c.id);
+  const d = c.decision, x = c.disbursal;
+  return `<div class="grid2"><div class="card"><h3 style="margin-bottom:12px">Bank login</h3>${c.bank.ref ? `<dl class="kv"><dt>Bank</dt><dd>${b.name}</dd><dt>Reference number</dt><dd class="num">${esc(c.bank.ref)}</dd><dt>Login date</dt><dd>${day(c.bank.loginDate)}</dd><dt>Branch / scheme</dt><dd>${esc(c.bank.branch || '—')}</dd><dt>SPOC emailed</dt><dd>${dt(c.bank.spocAt)}</dd><dt>Portal last checked</dt><dd>${c.portalCheckedAt ? ago(c.portalCheckedAt) : '—'}</dd></dl>` : `<p class="muted">Not logged with ${b?.name || 'a bank'} yet.</p>`}
+      ${emails.length ? `<div style="margin-top:12px;display:grid;gap:8px">${emails.map(({ e, i }) => `<button class="email" style="text-align:left;cursor:pointer" data-act="email" data-i="${i}"><b>Email to ${esc(e.to)}</b><span class="small muted">${esc(e.subject)}</span></button>`).join('')}</div>` : ''}</div>
+    <div class="card"><h3 style="margin-bottom:12px">Decision and disbursal</h3>${d ? (d.type === 'sanctioned' ? `<dl class="kv"><dt>Decision</dt><dd>${chip('sanctioned')}</dd><dt>Amount</dt><dd>${amt(d.amount)}</dd><dt>Interest rate</dt><dd>${d.rate}% a year</dd><dt>Tenure</dt><dd>${d.tenure || '—'} years</dd><dt>Processing fee</dt><dd>${esc(d.fee || '—')}</dd><dt>Conditions</dt><dd>${esc(d.conditions || '—')}</dd><dt>Date</dt><dd>${day(d.date)}</dd><dt>Letter</dt><dd>${esc(d.letter || 'sanction_letter.pdf')}</dd></dl>` : `<dl class="kv"><dt>Decision</dt><dd>${chip('rejected')}</dd><dt>Reason</dt><dd>${esc(d.reason)}</dd><dt>Date</dt><dd>${day(d.date)}</dd></dl>`) : '<p class="muted">No decision yet.</p>'}
+      ${x ? `<dl class="kv" style="margin-top:14px"><dt>Disbursed</dt><dd>${amt(x.amount)} (${esc(x.mode)})</dd><dt>Date</dt><dd>${day(x.date)}</dd><dt>Loan account</dt><dd class="num">${esc(x.lan)}</dd></dl>` : ''}</div></div>
+    <div class="card"><h3 style="margin-bottom:10px">Bank queries on this case</h3>${c.requests.filter((r) => r.kind === 'query').length ? c.requests.filter((r) => r.kind === 'query').map((r) => `<p class="small" style="padding:8px 0;border-top:1px solid var(--line)"><b>${day(r.createdAt)}</b> · ${esc(r.note)} <span class="chip ${r.status === 'done' ? 'chip--good' : 'chip--warn'}">${r.status === 'done' ? 'resolved' : r.status}</span></p>`).join('') : '<p class="muted small">None.</p>'}</div>`;
+}
+
+function tabTimeline(c) {
+  const items = S.audit.filter((x) => x.caseId === c.id).sort((a, b) => b.at - a.at);
+  return `<div class="card"><ul class="timeline">${items.map((x) => `<li><span></span><div><b>${esc(x.text)}</b><div class="tiny muted">${x.by === 'system' ? 'CRM' : user(x.by)?.name || ''} · ${dt(x.at)}</div></div></li>`).join('')}</ul></div>`;
+}
+
+function viewCase(id) {
+  const c = getCase(id);
+  if (!c) return '<div class="card"><p class="empty">Case not found.</p></div>';
+  if (!canSee(c)) return `<div class="card"><p class="empty">${esc(me().name)} (${ROLES[me().role]}) cannot see this case. Switch user at the top to see it.</p></div>`;
+  const b = bank(c.bankId), se = salesOf(c), be = user(c.assignee);
+  const stage = STAGE_OF[c.status], closedBad = ['rejected', 'withdrawn'].includes(c.status) || (c.status === 'not-eligible' && c.eligibility?.confirmed);
+  const [who, what] = nextStep(c);
+  const head = `<div class="case-head"><a href="#cases" class="small">← All cases</a><div class="case-title"><h1>${esc(c.applicant.name || 'New customer')}</h1>${chip(c.status, c.status === 'not-eligible' && !c.eligibility?.confirmed ? ' · awaiting manager' : '')}${c.unrouted && c.status === 'submitted' ? '<span class="chip chip--bad">unrouted</span>' : ''}</div>
+    <div class="meta-row"><span><b class="num">${c.id}</b></span><span>${c.product}</span><span>${b ? b.name : 'Bank not chosen'}</span><span><b>${amt(c.amount)}</b></span><span>Mobile <b class="num">${esc(c.applicant.mobile)}</b></span>${c.bank.ref ? `<span>Bank ref <b class="num">${esc(c.bank.ref)}</b></span>` : ''}</div>
+    ${c.status !== 'draft' ? `<div class="stepper" aria-label="Progress">${STAGES.map(([k, l], i) => `<div class="${closedBad && i >= stage ? '' : i < stage || (i === stage && ['disbursed'].includes(c.status)) ? 'done' : i === stage ? 'now' : ''}"><i></i><span>${l}</span></div>`).join('')}</div>` : ''}
+    <div class="actions">${caseActions(c)}</div></div>`;
+  if (c.status === 'draft') return head + draftEditor(c);
+  const reqCount = openReqs(c).length;
+  const tabs = [['overview', 'Overview'], ['docs', `Documents (${c.docs.filter((d) => d.status !== 'superseded').length})`], ['requests', `Requests and queries${reqCount ? ` (${reqCount} open)` : ''}`], ['bank', 'Bank'], ['timeline', 'Timeline']];
+  if (!tabs.some(([k]) => k === caseTab)) caseTab = 'overview';
+  const panel = { overview: tabOverview, docs: tabDocs, requests: tabRequests, bank: tabBank, timeline: tabTimeline }[caseTab](c);
+  const linked = c.linked.map(getCase).filter(Boolean);
+  return `${head}<div class="case-body"><div style="min-width:0"><div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${k === caseTab}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}</div><div class="tabpanel">${panel}</div></div>
+    <aside style="display:grid;gap:16px"><div class="card next"><p class="tiny muted" style="font-weight:700;letter-spacing:.08em;text-transform:uppercase">Next step${who ? ' · ' + esc(who) : ''}</p><p style="margin-top:6px;font-weight:600">${esc(what)}</p></div>
+    <div class="card"><h3 style="margin-bottom:12px">People</h3><div class="people"><div class="person">${avatar(se)}<div><b>${se.name}</b><div class="tiny muted">Sales Executive · follow-up: ${se.followUp === 'sales' ? 'self' : 'backend'}</div></div></div>${be ? `<div class="person">${avatar(be)}<div><b>${be.name}</b><div class="tiny muted">Backend Executive${be.label ? ' · ' + be.label : ''}</div></div></div>` : '<p class="small muted">No Backend Executive yet.</p>'}${b ? `<div class="person"><span class="avatar" style="background:var(--surface-2);color:var(--ink)">B${b.no}</span><div><b>${spocsFor(b, c.product).map((s) => s.name).join(', ')}</b><div class="tiny muted">Bank SPOC · ${b.name}</div></div></div>` : ''}</div></div>
+    ${linked.length ? `<div class="card"><h3 style="margin-bottom:10px">Linked cases</h3>${linked.map((l) => `<p class="small" style="padding:6px 0"><a href="#case/${l.id}">${l.id}</a> · ${bank(l.bankId)?.name} ${canSee(l) ? chip(l.status) : ''}</p>`).join('')}</div>` : ''}</aside></div>`;
+}
+
+function viewAllocation() {
+  const execs = S.users.filter((u) => u.role === 'backend');
+  return `<div class="page-head"><div><h1>Bank allocation</h1><p class="muted">Each Backend Executive receives submitted cases only for their banks. One primary executive: auto-assigned. Several: shared queue. Backups see a case when no primary is available or it waits past ${SLA_H.pickup} hours. Changes apply to new cases.</p></div></div>
+    <div class="card card--flush alloc"><div class="table-wrap"><table class="tbl"><thead><tr><th>Backend Executive</th>${BANKS.map((b) => `<th>Bank ${b.no}<br><span style="text-transform:none;letter-spacing:0;font-weight:600">${b.name}</span></th>`).join('')}<th>On leave</th></tr></thead><tbody>${execs.map((u) => `<tr><td><b>${u.name}</b><div class="tiny muted">${u.label || ''}</div></td>${BANKS.map((b) => { const v = S.allocation[u.id]?.[b.id] || ''; return `<td class="${v ? 'on' : ''}"><select data-alloc="${u.id}|${b.id}" aria-label="${u.name} for ${b.name}"><option value="">—</option><option value="primary" ${v === 'primary' ? 'selected' : ''}>Primary</option><option value="backup" ${v === 'backup' ? 'selected' : ''}>Backup</option></select></td>`; }).join('')}<td><label class="switch"><input type="checkbox" data-leave="${u.id}" ${u.leave ? 'checked' : ''}> Leave</label></td></tr>`).join('')}</tbody></table></div></div>
+    <div class="card"><h3 style="margin-bottom:8px">Routing preview</h3><div class="table-wrap"><table class="tbl"><thead><tr><th>Bank</th><th>A new case goes to</th></tr></thead><tbody>${BANKS.map((b) => { const p = allocatedTo(b.id, 'primary').filter((u) => !u.leave), k = allocatedTo(b.id, 'backup').filter((u) => !u.leave); return `<tr><td>${b.name}</td><td>${p.length === 1 ? `Auto-assigned to <b>${p[0].name}</b>` : p.length > 1 ? `Shared queue: <b>${p.map((u) => u.name).join(', ')}</b>` : k.length ? `Backup queue: <b>${k.map((u) => u.name).join(', ')}</b>` : '<span class="chip chip--bad">Unrouted, Manager alerted</span>'}</td></tr>`; }).join('')}</tbody></table></div></div>`;
+}
+
+function viewTeam() {
+  const sales = S.users.filter((u) => u.role === 'sales'), be = S.users.filter((u) => u.role === 'backend');
+  return `<div class="page-head"><div><h1>Team and follow-up</h1><p class="muted">Who chases the customer for missing documents and bank queries, per Sales Executive. Can be overridden on a single case or request.</p></div></div>
+    <div class="card card--flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>Sales Executive</th><th>Follow-up arrangement</th><th>Open cases</th></tr></thead><tbody>${sales.map((u) => `<tr><td><div class="person">${avatar(u)}<b>${u.name}</b></div></td><td><select data-followup="${u.id}" style="padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface)"><option value="sales" ${u.followUp === 'sales' ? 'selected' : ''}>Sales Executive follows up</option><option value="backend" ${u.followUp === 'backend' ? 'selected' : ''}>Backend Executive follows up</option></select></td><td class="num">${S.cases.filter((c) => c.createdBy === u.id && OPEN.includes(c.status)).length}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="card card--flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>Team member</th><th>Role</th><th>Banks</th><th>Status</th></tr></thead><tbody>${S.users.map((u) => `<tr><td><div class="person">${avatar(u)}<b>${u.name}</b></div></td><td>${ROLES[u.role]}${u.label ? ' · ' + u.label : ''}${u.title ? ' · ' + u.title : ''}</td><td class="small">${u.role === 'backend' ? myBanks(u).map((b) => bank(b).name + (S.allocation[u.id][b] === 'backup' ? ' (backup)' : '')).join(', ') : '—'}</td><td>${u.leave ? '<span class="chip chip--warn">On leave</span>' : '<span class="chip chip--good">Active</span>'}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function viewBanks() {
+  return `<div class="page-head"><div><h1>Banks and SPOCs</h1><p class="muted">The SPOCs listed here are emailed automatically when a file is logged with their bank.</p></div></div>
+    <div class="grid2">${BANKS.map((b) => `<div class="card"><div class="card__head"><h2>Bank ${b.no} · ${b.name}</h2><button class="btn btn--ghost btn--sm" data-act="addSpoc" data-bank="${b.id}">+ Add SPOC</button></div>${b.spocs.map((s) => `<div class="person" style="padding:6px 0"><span class="avatar" style="background:var(--brand)">${s.name.split(' ').map((w) => w[0]).join('')}</span><div><b>${esc(s.name)}</b><div class="tiny muted" style="user-select:all">${esc(s.email)}</div><div class="tiny muted">${esc(s.product)}</div></div></div>`).join('')}<p class="small muted" style="margin-top:8px">Allocated: ${[...allocatedTo(b.id, 'primary').map((u) => u.name), ...allocatedTo(b.id, 'backup').map((u) => u.name + ' (backup)')].join(', ') || 'nobody'}</p></div>`).join('')}</div>`;
+}
+
+function viewEmails() {
+  return `<div class="page-head"><div><h1>Emails sent</h1><p class="muted">Emails generated by the CRM, including bank SPOC emails. Prototype: nothing is actually sent.</p></div></div>
+    <div class="card card--flush">${S.emails.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Sent</th><th>To</th><th>Subject</th></tr></thead><tbody>${S.emails.map((e, i) => `<tr class="link" data-act="email" data-i="${i}"><td class="small">${dt(e.at)}</td><td>${e.spoc ? '<span class="tag">Bank SPOC</span> ' : ''}${esc(e.to)}</td><td>${esc(e.subject)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">No emails yet. Submit a case or enter a bank reference number to generate some.</p>'}</div>`;
+}
+
+function viewAudit() {
+  const rows = S.audit.filter((a) => !a.caseId || canSee(getCase(a.caseId) || { status: 'x' })).slice(0, 200);
+  return `<div class="page-head"><div><h1>Audit log</h1><p class="muted">Every action, with who did it and when. Cannot be edited.</p></div></div>
+    <div class="card card--flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>When</th><th>Who</th><th>Case</th><th>Action</th></tr></thead><tbody>${rows.map((a) => `<tr><td class="small">${dt(a.at)}</td><td>${a.by === 'system' ? 'CRM' : esc(user(a.by)?.name || '')}</td><td>${a.caseId ? `<a href="#case/${a.caseId}">${a.caseId}</a>` : '—'}</td><td>${esc(a.text)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* =================== NOTIFICATIONS DRAWER =================== */
+function openDrawer() {
+  const list = S.notifications.filter((n) => n.userId === S.me);
+  $('#overlayRoot').innerHTML = `<div class="drawer" role="dialog" aria-label="Notifications"><div class="drawer__head"><h2>Notifications</h2><div class="actions"><button class="btn btn--ghost btn--sm" data-act="readAll">Mark all read</button><button class="icon-btn" id="dclose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div><div class="drawer__list">${list.length ? list.map((n) => `<a href="#" class="notif ${n.read ? '' : 'unread'}" data-act="openNotif" data-id="${n.id}"><span>${esc(n.text)}</span><span class="tiny muted">${ago(n.at)}${n.caseId ? ' · ' + n.caseId : ''}</span></a>`).join('') : '<p class="empty">No notifications for ' + esc(me().name) + '.</p>'}</div></div>`;
+  $('#dclose').addEventListener('click', closeDrawer);
+}
+function closeDrawer() { if ($('.drawer')) $('#overlayRoot').innerHTML = ''; }
+
+/* =================== RENDER =================== */
+function render() {
+  const [route, arg] = (location.hash.slice(1) || 'dashboard').split('/');
+  const allowed = NAV.find((n) => n[0] === route)?.[2];
+  let html;
+  if (route === 'case') html = viewCase(arg);
+  else if (allowed && !allowed.includes(me().role)) html = `<div class="card"><p class="empty">${ROLES[me().role]} cannot open this page.</p></div>`;
+  else html = ({ dashboard: viewDashboard, cases: viewCases, queue: viewQueue, tasks: viewTasks, allocation: viewAllocation, team: viewTeam, banks: viewBanks, emails: viewEmails, audit: viewAudit }[route] || viewDashboard)();
+  $('#view').innerHTML = html;
+  renderSide();
+  $('#viewAs').innerHTML = S.users.map((u) => `<option value="${u.id}" ${u.id === S.me ? 'selected' : ''}>${u.name} · ${ROLES[u.role]}${u.label ? ' (' + u.label + ')' : ''}</option>`).join('');
+  const unread = S.notifications.filter((n) => n.userId === S.me && !n.read).length;
+  $('#bellDot').hidden = !unread; $('#bellDot').textContent = unread;
+  const fq = $('#fq'); if (fq) { fq.addEventListener('input', () => { filter.q = fq.value; const pos = fq.selectionStart; render(); const n = $('#fq'); n.focus(); n.setSelectionRange(pos, pos); }); }
+  $('#fs')?.addEventListener('change', (e) => { filter.status = e.target.value; render(); });
+  $('#fb')?.addEventListener('change', (e) => { filter.bank = e.target.value; render(); });
+}
+
+/* =================== EVENTS =================== */
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-act]');
+  if (a) { e.preventDefault(); ACT[a.dataset.act]?.(a.dataset); return; }
+  const pv = e.target.closest('[data-pickval]');
+  if (pv) { const c = getCase(pv.dataset.case); c.applicant[pv.dataset.field] = pv.dataset.pickval; c.ocr[pv.dataset.field].source = 'manual'; log(c, `Chose "${pv.dataset.pickval}" for ${OCR_FIELDS.find((f) => f[0] === pv.dataset.field)[1]}`); save(); render(); return; }
+  const row = e.target.closest('tr[data-href]');
+  if (row && !e.target.closest('a,button')) location.hash = row.dataset.href;
+});
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'viewAs') { S.me = t.value; caseTab = 'overview'; save(); render(); toast(`Now viewing as ${me().name}, ${ROLES[me().role]}`); return; }
+  if (t.dataset.field && t.dataset.case) { const c = getCase(t.dataset.case), k = t.dataset.field; const v = t.value.trim(); if (k === 'pan' && v && !/^[A-Za-z]{5}\d{4}[A-Za-z]$/.test(v)) toast('PAN should look like ABCDE1234F'); c.applicant[k] = k === 'pan' ? v.toUpperCase() : v; c.ocr[k] = { ...(c.ocr[k] || { values: [] }), source: 'manual' }; log(c, `Corrected ${OCR_FIELDS.find((f) => f[0] === k)[1]}`); save(); render(); return; }
+  if (t.dataset.loan && t.dataset.case) { const c = getCase(t.dataset.case), k = t.dataset.loan; c[k] = ['amount', 'tenure'].includes(k) ? +t.value.replace(/[^\d.]/g, '') || '' : t.value; save(); render(); return; }
+  if (t.dataset.alloc) { const [uid, bid] = t.dataset.alloc.split('|'); S.allocation[uid] = S.allocation[uid] || {}; if (t.value) S.allocation[uid][bid] = t.value; else delete S.allocation[uid][bid]; log(null, `${user(uid).name} set to ${t.value || 'none'} for ${bank(bid).name}`); save(); render(); toast('Allocation saved; applies to new cases'); return; }
+  if (t.dataset.leave) { const u = user(t.dataset.leave); u.leave = t.checked; log(null, `${u.name} marked ${u.leave ? 'on leave' : 'back from leave'}`); save(); render(); return; }
+  if (t.dataset.followup) { const u = user(t.dataset.followup); u.followUp = t.value; log(null, `${u.name}'s follow-up arrangement: ${t.value === 'sales' ? 'Sales Executive follows up' : 'Backend Executive follows up'}`); save(); render(); toast('Follow-up arrangement saved'); }
+});
+$('#bell').addEventListener('click', () => ($('.drawer') ? closeDrawer() : openDrawer()));
+addEventListener('hashchange', () => { if (!location.hash.startsWith('#case/')) caseTab = 'overview'; closeDrawer(); render(); window.scrollTo(0, 0); });
+render();
+</script>
