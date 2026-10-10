@@ -235,25 +235,140 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: .9rem; }
 <script>
 /* =================== MASTER DATA =================== */
 const ROLES = { superadmin: 'Super Admin', admin: 'Admin', manager: 'Manager', sales: 'Sales Executive', backend: 'Backend Executive' };
-const BANKS = [
-  { id: 'b1', no: 1, name: 'Bharat National Bank', spocs: [{ name: 'Ramesh Menon', email: 'ramesh.menon@bnb.example', product: 'All products' }] },
-  { id: 'b2', no: 2, name: 'Metro City Bank', spocs: [{ name: 'Farah Khan', email: 'farah.khan@metrocity.example', product: 'Personal Loan, Business Loan, Cash Credit', products: ['Personal Loan', 'Business Loan', 'Cash Credit'] }, { name: 'Ajay Rao', email: 'ajay.rao@metrocity.example', product: 'Home Loan, Loan Against Property', products: ['Home Loan', 'Loan Against Property'] }] },
-  { id: 'b3', no: 3, name: 'Sahyadri Co-operative Bank', spocs: [{ name: 'Meera Joshi', email: 'meera.joshi@sahyadri.example', product: 'All products' }] },
-  { id: 'b4', no: 4, name: 'Unity Housing Finance', spocs: [{ name: 'Deepak Shetty', email: 'deepak.shetty@unityhf.example', product: 'All products' }] },
-  { id: 'b5', no: 5, name: 'Kaveri Small Finance Bank', spocs: [{ name: 'Lakshmi Iyer', email: 'lakshmi.iyer@kaveri.example', product: 'All products' }] },
+/* =================== MASTER DATA (seeded into state, editable on the Masters screens) =================== */
+function seedMasters() {
+  const banks = [
+    { id: 'b1', no: 1, name: 'Bharat National Bank', short: 'BNB', type: 'Public sector bank', dsaCode: 'BNB-DSA-04417', portalUrl: 'https://partners.bnb.example', agreementTill: '2027-03-31', payoutCycle: 'Monthly', active: true },
+    { id: 'b2', no: 2, name: 'Metro City Bank', short: 'MCB', type: 'Private sector bank', dsaCode: 'MCB/DSA/2291', portalUrl: 'https://dsa.metrocity.example', agreementTill: '2026-12-31', payoutCycle: 'Monthly', active: true },
+    { id: 'b3', no: 3, name: 'Sahyadri Co-operative Bank', short: 'SCB', type: 'Co-operative bank', dsaCode: 'SCB-PUNE-118', portalUrl: 'https://loans.sahyadri.example', agreementTill: '2027-06-30', payoutCycle: 'Per disbursal', active: true },
+    { id: 'b4', no: 4, name: 'Unity Housing Finance', short: 'UHF', type: 'Housing finance company', dsaCode: 'UHF-CP-0912', portalUrl: 'https://connect.unityhf.example', agreementTill: '2027-01-31', payoutCycle: 'Monthly', active: true },
+    { id: 'b5', no: 5, name: 'Kaveri Small Finance Bank', short: 'KSFB', type: 'Small finance bank', dsaCode: 'KSFB-DSA-3305', portalUrl: 'https://partner.kaveri.example', agreementTill: '2026-11-30', payoutCycle: 'Monthly', active: true },
+  ];
+  const L1 = 'Level 1 (day-to-day)', L2 = 'Level 2 (escalation)';
+  const spocs = [
+    { id: 's1', bankId: 'b1', name: 'Ramesh Menon', designation: 'Relationship Manager', email: 'ramesh.menon@bnb.example', phone: '9820011001', products: [], region: 'Pune', level: L1, active: true },
+    { id: 's2', bankId: 'b1', name: 'Kavita Rao', designation: 'Cluster Head', email: 'kavita.rao@bnb.example', phone: '9820011002', products: [], region: 'Pune', level: L2, active: true },
+    { id: 's3', bankId: 'b2', name: 'Farah Khan', designation: 'Sales Manager, unsecured loans', email: 'farah.khan@metrocity.example', phone: '9820022001', products: ['pl', 'bl'], region: 'Pune West', level: L1, active: true },
+    { id: 's4', bankId: 'b2', name: 'Ajay Rao', designation: 'Sales Manager, mortgages', email: 'ajay.rao@metrocity.example', phone: '9820022002', products: ['hl', 'lap'], region: 'Pune West', level: L1, active: true },
+    { id: 's5', bankId: 'b3', name: 'Meera Joshi', designation: 'Branch Manager', email: 'meera.joshi@sahyadri.example', phone: '9820033001', products: [], region: 'Kothrud', level: L1, active: true },
+    { id: 's6', bankId: 'b4', name: 'Deepak Shetty', designation: 'Area Sales Manager', email: 'deepak.shetty@unityhf.example', phone: '9820044001', products: [], region: 'Pune', level: L1, active: true },
+    { id: 's7', bankId: 'b5', name: 'Lakshmi Iyer', designation: 'Relationship Manager, business banking', email: 'lakshmi.iyer@kaveri.example', phone: '9820055001', products: [], region: 'Nashik and Pune', level: L1, active: true },
+  ];
+  const products = [
+    { id: 'pl', name: 'Personal Loan', category: 'Retail', secured: false, requiredDocs: ['pan', 'aadhaar', 'salary', 'bank'], description: 'Unsecured loan for salaried customers.', active: true },
+    { id: 'bl', name: 'Business Loan', category: 'Business', secured: false, requiredDocs: ['pan', 'aadhaar', 'bank', 'itr', 'gst'], description: 'Unsecured term loan for businesses and professionals.', active: true },
+    { id: 'hl', name: 'Home Loan', category: 'Retail', secured: true, requiredDocs: ['pan', 'aadhaar', 'salary', 'bank', 'property'], description: 'Purchase, construction or renovation of a home.', active: true },
+    { id: 'lap', name: 'Loan Against Property', category: 'Retail', secured: true, requiredDocs: ['pan', 'aadhaar', 'bank', 'itr', 'property'], description: 'Loan secured by residential or commercial property.', active: true },
+    { id: 'cc', name: 'Cash Credit', category: 'Business', secured: true, requiredDocs: ['pan', 'aadhaar', 'bank', 'itr', 'gst', 'stock'], description: 'Working-capital limit against stock and receivables.', active: true },
+  ];
+  const docTypes = [
+    ['pan', 'PAN card', 'Identity', true, ''], ['aadhaar', 'Aadhaar card', 'Identity', true, ''], ['salary', 'Salary slips (3 months)', 'Income', true, 90],
+    ['bank', 'Bank statement (6 months)', 'Banking', true, 60], ['itr', 'Income tax returns / Form 16', 'Income', true, ''], ['address', 'Address proof', 'Address', true, 90],
+    ['gst', 'GST / business registration', 'Business', true, ''], ['property', 'Property documents', 'Property', false, ''], ['noc', 'Builder NOC / allotment letter', 'Property', false, ''],
+    ['stock', 'Stock and debtors statement', 'Business', false, 30], ['photo', 'Photograph', 'Identity', false, ''], ['other', 'Other document', 'Other', false, ''],
+  ].map(([id, name, category, ocr, validityDays]) => ({ id, code: id, name, category, ocr, validityDays, active: true }));
+  const range = { pl: [50000, 4000000, 1, 6, 10.49, 16], bl: [300000, 7500000, 1, 5, 14, 19], hl: [500000, 100000000, 5, 30, 8.35, 10.5], lap: [1000000, 50000000, 3, 15, 9.25, 12], cc: [1000000, 100000000, 1, 1, 9.5, 12.5] };
+  const fee = { pl: 'Up to 2%', bl: '1.5% to 3%', hl: '0.25% to 0.5%', lap: 'Up to 1%', cc: '0.5% to 1%' };
+  const offer = { b1: ['pl', 'bl', 'hl', 'lap', 'cc'], b2: ['pl', 'bl', 'hl', 'lap'], b3: ['pl', 'bl', 'lap', 'cc'], b4: ['hl', 'lap'], b5: ['pl', 'bl', 'cc'] };
+  const payout = { pl: 1.5, bl: 1.75, hl: 0.5, lap: 0.8, cc: 0.4 };
+  let n = 0;
+  const bankProducts = Object.entries(offer).flatMap(([bankId, list]) => list.map((pid, i) => {
+    const [minAmount, maxAmount, minTenure, maxTenure, roiFrom, roiTo] = range[pid];
+    const bump = Number(bankId.slice(1)) * 0.1;
+    return { id: 'bp' + ++n, bankId, productId: pid, scheme: `${products.find((p) => p.id === pid).name} ${bankId === 'b4' ? 'Griha' : 'Standard'}`, minAmount, maxAmount, minTenure, maxTenure, roiFrom: +(roiFrom + bump).toFixed(2), roiTo: +(roiTo + bump).toFixed(2), processingFee: fee[pid], minIncome: pid === 'pl' ? 20000 : pid === 'hl' ? 25000 : '', maxAge: pid === 'hl' ? 65 : 60, payout: +(payout[pid] + (i % 2 ? 0.1 : 0)).toFixed(2), extraDocs: bankId === 'b4' && pid === 'hl' ? ['noc'] : [], active: true };
+  }));
+  const list = (prefix, names) => names.map((name, i) => ({ id: prefix + (i + 1), name, active: true }));
+  return {
+    banks, spocs, products, docTypes, bankProducts,
+    queryReasons: list('q', ['Income proof mismatch', 'Address proof unclear or expired', 'Bank statement incomplete', 'Signature mismatch', 'Property document missing', 'Clarification on past repayments', 'Other']),
+    rejectReasons: list('rj', ['Low credit score', 'Income below bank policy', 'Existing instalments too high', 'Business vintage below policy', 'Property not approved by bank', 'Location not serviced by bank', 'Document authenticity concerns', 'Other']),
+    neReasons: list('ne', ['Existing instalments too high', 'Income below bank minimum', 'Age outside bank policy', 'Employer category not accepted', 'Business vintage too short', 'Other']),
+    leadSources: list('ls', ['Website enquiry', 'Walk-in', 'Referral partner', 'Phone call', 'WhatsApp', 'Existing customer']),
+    partners: [
+      { id: 'p1', name: 'Sunil Mehta', firm: 'Mehta & Associates, Chartered Accountants', mobile: '9822012345', email: 'sunil@mehta-ca.example', pan: 'AAQPM1234K', payout: 0.25, account: 'XXXXXX4410', active: true },
+      { id: 'p2', name: 'Rekha Builders', firm: 'Rekha Builders and Developers', mobile: '9822054321', email: 'sales@rekhabuilders.example', pan: 'AAFFR5678L', payout: 0.2, account: 'XXXXXX8812', active: true },
+    ],
+    sla: [
+      { id: 'pickup', name: 'Submitted to picked up', hours: 4, escalateTo: 'Manager' },
+      { id: 'verify', name: 'Picked up to verified', hours: 8, escalateTo: 'Manager' },
+      { id: 'login', name: 'Ready to logged in with bank', hours: 8, escalateTo: 'Manager' },
+      { id: 'request', name: 'Default due time for document requests', hours: 48, escalateTo: 'Manager' },
+      { id: 'portal', name: 'Bank portal check on cases under review', hours: 24, escalateTo: 'Manager' },
+    ],
+    templates: [
+      { id: 'spoc', name: 'Bank SPOC: new file logged', subject: 'New login: {customer}, {product}, {amount}, Ref {ref}', body: 'Dear {spoc},\n\nWe have logged the following file on your portal:\n\nCustomer: {customer}\nProduct: {product}\nAmount: {amount}\nBank reference number: {ref}\nLogin date: {date}\nFinsol case number: {case}\n\nFinsol contacts:\nBackend Executive: {backend}\nSales Executive: {sales}\n\nRegards,\nFinsol Processing Team' },
+      { id: 'docs', name: 'Internal: documents requested', subject: 'Documents needed on {customer}', body: 'Please collect the following from {customer}: {items}.\nDue: {due}\n\nNote from processing: {note}' },
+    ],
+    holidays: [
+      { id: 'h1', date: '2026-12-25', name: 'Christmas', active: true },
+      { id: 'h2', date: '2027-01-26', name: 'Republic Day', active: true },
+      { id: 'h3', date: '2027-05-01', name: 'Maharashtra Day', active: true },
+    ],
+    settings: { id: 'settings', casePrefix: 'FS', ocrProvider: 'Not chosen yet', retentionDays: 1825, sessionMinutes: 30, passwordMin: 10, adminOtp: true },
+  };
+}
+
+/* Which master each role can open. Super Admin can always edit. */
+const MASTERS = [
+  { key: 'users', label: 'Users', group: 'People', critical: true, desc: 'Everyone who can log in: role, reporting line and status. Deactivated users cannot log in and get no new cases.',
+    fields: [{ k: 'name', l: 'Full name', t: 'text', req: true }, { k: 'email', l: 'Work email', t: 'email', req: true, unique: true }, { k: 'mobile', l: 'Mobile', t: 'text' },
+      { k: 'role', l: 'Role', t: 'select', req: true, opts: () => Object.entries(ROLES) }, { k: 'label', l: 'Display label (for example Executive A)', t: 'text' },
+      { k: 'reportsTo', l: 'Reports to', t: 'ref', ref: 'users' }, { k: 'followUp', l: 'Follow-up arrangement (Sales Executives)', t: 'select', opts: () => [['sales', 'Sales Executive follows up'], ['backend', 'Backend Executive follows up']] },
+      { k: 'active', l: 'Active (can log in)', t: 'bool' }],
+    cols: ['name', 'email', 'role', 'reportsTo', 'active'] },
+  { key: 'partners', label: 'Referral partners', group: 'People', critical: true, desc: 'Chartered accountants, builders and others who refer customers, with their payout share.',
+    fields: [{ k: 'name', l: 'Name', t: 'text', req: true }, { k: 'firm', l: 'Firm', t: 'text' }, { k: 'mobile', l: 'Mobile', t: 'text' }, { k: 'email', l: 'Email', t: 'email' }, { k: 'pan', l: 'PAN', t: 'text' },
+      { k: 'payout', l: 'Payout to partner (% of disbursed amount)', t: 'number' }, { k: 'account', l: 'Bank account for payout', t: 'text' }, { k: 'active', l: 'Active', t: 'bool' }],
+    cols: ['name', 'firm', 'mobile', 'payout', 'active'] },
+  { key: 'banks', label: 'Banks', group: 'Banks and products', critical: true, desc: 'Lenders Finsol works with, Finsol\'s DSA code with each and the agreement validity.',
+    fields: [{ k: 'no', l: 'Bank number', t: 'number', req: true }, { k: 'name', l: 'Bank name', t: 'text', req: true, unique: true }, { k: 'short', l: 'Short name', t: 'text' },
+      { k: 'type', l: 'Type', t: 'select', opts: () => ['Public sector bank', 'Private sector bank', 'Small finance bank', 'Co-operative bank', 'Housing finance company', 'Non-banking finance company'] },
+      { k: 'dsaCode', l: 'Finsol DSA code with this bank', t: 'text' }, { k: 'portalUrl', l: 'Bank portal address', t: 'text' }, { k: 'agreementTill', l: 'DSA agreement valid till', t: 'date' },
+      { k: 'payoutCycle', l: 'Payout cycle', t: 'select', opts: () => ['Monthly', 'Per disbursal', 'Quarterly'] }, { k: 'active', l: 'Active (new cases allowed)', t: 'bool' }],
+    cols: ['no', 'name', 'type', 'dsaCode', 'agreementTill', 'active'] },
+  { key: 'spocs', label: 'Bank SPOCs', group: 'Banks and products', critical: false, desc: 'Bank contacts. Level 1 SPOCs covering the case\'s product are emailed automatically when a file is logged.',
+    fields: [{ k: 'bankId', l: 'Bank', t: 'ref', ref: 'banks', req: true }, { k: 'name', l: 'Name', t: 'text', req: true }, { k: 'designation', l: 'Designation', t: 'text' },
+      { k: 'email', l: 'Email', t: 'email', req: true }, { k: 'phone', l: 'Phone', t: 'text' }, { k: 'products', l: 'Products covered (none ticked = all products)', t: 'multi', ref: 'products' },
+      { k: 'region', l: 'Region or branch', t: 'text' }, { k: 'level', l: 'Level', t: 'select', opts: () => ['Level 1 (day-to-day)', 'Level 2 (escalation)'] }, { k: 'active', l: 'Active', t: 'bool' }],
+    cols: ['bankId', 'name', 'designation', 'email', 'products', 'level', 'active'] },
+  { key: 'products', label: 'Loan products', group: 'Banks and products', critical: true, desc: 'The loan types Finsol offers and the documents every bank needs for each.',
+    fields: [{ k: 'name', l: 'Product name', t: 'text', req: true, unique: true }, { k: 'category', l: 'Category', t: 'select', opts: () => ['Retail', 'Business'] }, { k: 'secured', l: 'Secured against property or stock', t: 'bool' },
+      { k: 'requiredDocs', l: 'Mandatory documents', t: 'multi', ref: 'docTypes' }, { k: 'description', l: 'Description', t: 'textarea' }, { k: 'active', l: 'Active', t: 'bool' }],
+    cols: ['name', 'category', 'secured', 'requiredDocs', 'active'] },
+  { key: 'bankProducts', label: 'Bank loan products', group: 'Banks and products', critical: true, desc: 'Which bank offers which product, its limits, rates, extra documents and Finsol\'s payout. Only banks with an active entry appear when creating a case.',
+    fields: [{ k: 'bankId', l: 'Bank', t: 'ref', ref: 'banks', req: true }, { k: 'productId', l: 'Product', t: 'ref', ref: 'products', req: true }, { k: 'scheme', l: 'Scheme name', t: 'text' },
+      { k: 'minAmount', l: 'Minimum amount (₹)', t: 'number' }, { k: 'maxAmount', l: 'Maximum amount (₹)', t: 'number' }, { k: 'minTenure', l: 'Minimum tenure (years)', t: 'number' }, { k: 'maxTenure', l: 'Maximum tenure (years)', t: 'number' },
+      { k: 'roiFrom', l: 'Interest from (% a year)', t: 'number' }, { k: 'roiTo', l: 'Interest up to (% a year)', t: 'number' }, { k: 'processingFee', l: 'Processing fee', t: 'text' },
+      { k: 'minIncome', l: 'Minimum monthly income (₹)', t: 'number' }, { k: 'maxAge', l: 'Maximum age at maturity', t: 'number' }, { k: 'payout', l: 'Payout to Finsol (% of disbursed amount)', t: 'number' },
+      { k: 'extraDocs', l: 'Extra documents this bank needs', t: 'multi', ref: 'docTypes' }, { k: 'active', l: 'Active', t: 'bool' }],
+    cols: ['bankId', 'productId', 'maxAmount', 'roiFrom', 'payout', 'extraDocs', 'active'], unique: ['bankId', 'productId'] },
+  { key: 'allocation', label: 'Bank allocation', group: 'Banks and products', critical: false, desc: 'Which Backend Executives receive cases for each bank.', link: '#allocation' },
+  { key: 'docTypes', label: 'Document types', group: 'Documents and workflow', critical: false, desc: 'Documents that can be uploaded, whether OCR reads them and how recent they must be.',
+    fields: [{ k: 'code', l: 'Code', t: 'text', req: true, unique: true, lock: true }, { k: 'name', l: 'Name', t: 'text', req: true }, { k: 'category', l: 'Category', t: 'select', opts: () => ['Identity', 'Address', 'Income', 'Banking', 'Business', 'Property', 'Other'] },
+      { k: 'ocr', l: 'Read with OCR', t: 'bool' }, { k: 'validityDays', l: 'Must be newer than (days)', t: 'number' }, { k: 'active', l: 'Active', t: 'bool' }],
+    cols: ['name', 'category', 'ocr', 'validityDays', 'active'] },
+  { key: 'queryReasons', label: 'Bank query reasons', group: 'Documents and workflow', critical: false, desc: 'Choices when logging a bank query; used for reports.', fields: [{ k: 'name', l: 'Reason', t: 'text', req: true, unique: true }, { k: 'active', l: 'Active', t: 'bool' }], cols: ['name', 'active'] },
+  { key: 'rejectReasons', label: 'Rejection reasons', group: 'Documents and workflow', critical: false, desc: 'Choices when recording a bank rejection; used for reports.', fields: [{ k: 'name', l: 'Reason', t: 'text', req: true, unique: true }, { k: 'active', l: 'Active', t: 'bool' }], cols: ['name', 'active'] },
+  { key: 'neReasons', label: 'Not-eligible reasons', group: 'Documents and workflow', critical: false, desc: 'Choices when processing marks a case not eligible.', fields: [{ k: 'name', l: 'Reason', t: 'text', req: true, unique: true }, { k: 'active', l: 'Active', t: 'bool' }], cols: ['name', 'active'] },
+  { key: 'leadSources', label: 'Lead sources', group: 'Documents and workflow', critical: false, desc: 'Where a customer came from, chosen when creating a case.', fields: [{ k: 'name', l: 'Source', t: 'text', req: true, unique: true }, { k: 'active', l: 'Active', t: 'bool' }], cols: ['name', 'active'] },
+  { key: 'sla', label: 'SLA rules', group: 'Documents and workflow', critical: false, desc: 'Time allowed at each step before an alert.', noAdd: true,
+    fields: [{ k: 'name', l: 'Step', t: 'text', req: true, lock: true }, { k: 'hours', l: 'Hours allowed', t: 'number', req: true }, { k: 'escalateTo', l: 'Escalate to', t: 'select', opts: () => ['Manager', 'Admin'] }], cols: ['name', 'hours', 'escalateTo'] },
+  { key: 'templates', label: 'Email templates', group: 'Documents and workflow', critical: false, desc: 'Wording of emails the CRM sends. Placeholders in braces are filled in, for example {customer}, {ref}, {amount}.', noAdd: true,
+    fields: [{ k: 'name', l: 'Template', t: 'text', req: true, lock: true }, { k: 'subject', l: 'Subject', t: 'text', req: true }, { k: 'body', l: 'Body', t: 'textarea', req: true }], cols: ['name', 'subject'] },
+  { key: 'holidays', label: 'Holiday calendar', group: 'Documents and workflow', critical: false, desc: 'Non-working days, skipped when counting SLA time.', fields: [{ k: 'date', l: 'Date', t: 'date', req: true }, { k: 'name', l: 'Holiday', t: 'text', req: true }, { k: 'active', l: 'Active', t: 'bool' }], cols: ['date', 'name', 'active'] },
+  { key: 'settings', label: 'System settings', group: 'System', critical: true, single: true, desc: 'Case numbering, OCR provider, data retention and login security.',
+    fields: [{ k: 'casePrefix', l: 'Case number prefix', t: 'text', req: true }, { k: 'ocrProvider', l: 'OCR provider', t: 'select', opts: () => ['Not chosen yet', 'Google Document AI', 'AWS Textract', 'India KYC OCR provider'] },
+      { k: 'retentionDays', l: 'Keep closed-case documents for (days)', t: 'number', req: true }, { k: 'sessionMinutes', l: 'Log out after inactivity (minutes)', t: 'number', req: true },
+      { k: 'passwordMin', l: 'Minimum password length', t: 'number', req: true }, { k: 'adminOtp', l: 'One-time password for Admin and Super Admin logins', t: 'bool' }] },
 ];
-const PRODUCTS = ['Personal Loan', 'Business Loan', 'Home Loan', 'Loan Against Property', 'Cash Credit'];
-const DOC_TYPES = {
-  pan: 'PAN card', aadhaar: 'Aadhaar card', salary: 'Salary slips (3 months)', bank: 'Bank statement (6 months)', itr: 'Income tax returns / Form 16',
-  address: 'Address proof', gst: 'GST / business registration', property: 'Property documents', stock: 'Stock and debtors statement', photo: 'Photograph', other: 'Other document',
-};
-const REQUIRED = {
-  'Personal Loan': ['pan', 'aadhaar', 'salary', 'bank'],
-  'Business Loan': ['pan', 'aadhaar', 'bank', 'itr', 'gst'],
-  'Home Loan': ['pan', 'aadhaar', 'salary', 'bank', 'property'],
-  'Loan Against Property': ['pan', 'aadhaar', 'bank', 'itr', 'property'],
-  'Cash Credit': ['pan', 'aadhaar', 'bank', 'itr', 'gst', 'stock'],
-};
+const MASTER = Object.fromEntries(MASTERS.map((m) => [m.key, m]));
+const MGROUPS = ['People', 'Banks and products', 'Documents and workflow', 'System'];
+function defaultAccess() {
+  const acc = {};
+  MASTERS.forEach((m) => { acc[m.key] = m.critical ? { admin: 'view', manager: m.key === 'users' ? 'view' : 'none' } : { admin: 'edit', manager: ['templates', 'holidays'].includes(m.key) ? 'none' : 'view' }; });
+  return acc;
+}
+
 const STATUS = {
   draft: { label: 'Draft', tone: '' }, submitted: { label: 'Submitted', tone: 'info' }, processing: { label: 'In processing', tone: 'info' },
   'docs-pending': { label: 'Documents pending', tone: 'warn' }, 'not-eligible': { label: 'Not eligible', tone: 'bad' }, ready: { label: 'Ready for bank login', tone: 'info' },
@@ -263,7 +378,6 @@ const STATUS = {
 const OPEN = ['submitted', 'processing', 'docs-pending', 'ready', 'review', 'query', 'sanctioned'];
 const STAGES = [['draft', 'Draft'], ['submitted', 'Submitted'], ['processing', 'Processing'], ['ready', 'Ready'], ['review', 'Bank review'], ['sanctioned', 'Sanctioned'], ['disbursed', 'Disbursed']];
 const STAGE_OF = { draft: 0, submitted: 1, processing: 2, 'docs-pending': 2, 'not-eligible': 2, ready: 3, review: 4, query: 4, sanctioned: 5, rejected: 4, disbursed: 6, withdrawn: -1 };
-const SLA_H = { pickup: 4, verify: 8, login: 8 };
 const OCR_FIELDS = [
   ['name', 'Full name'], ['fatherName', "Father's name"], ['dob', 'Date of birth'], ['gender', 'Gender'], ['pan', 'PAN'], ['aadhaar', 'Aadhaar (last 4 digits)'],
   ['mobile', 'Mobile'], ['email', 'Email'], ['address', 'Current address'], ['employmentType', 'Employment type'], ['employer', 'Employer or business name'],
@@ -281,25 +395,26 @@ const OCR_SAMPLE = {
 };
 
 /* =================== STATE =================== */
-const KEY = 'finsol-crm-prototype-v1';
+const KEY = 'finsol-crm-prototype-v2';
 const H = 3600e3, D = 24 * H;
 const now = () => Date.now();
 let S;
 function seed() {
   const t = now();
+  const masters = seedMasters();
   const users = [
-    { id: 'u1', name: 'Vikram Shah', role: 'superadmin', title: 'Owner', color: '#7c3aed' },
-    { id: 'u2', name: 'Anjali Rao', role: 'admin', title: 'Operations head', color: '#0e7490' },
-    { id: 'u3', name: 'Suresh Iyer', role: 'manager', title: 'Sales and processing manager', color: '#b45309' },
-    { id: 'u4', name: 'Priya Patil', role: 'sales', followUp: 'sales', color: '#db2777' },
-    { id: 'u5', name: 'Arjun Nair', role: 'sales', followUp: 'backend', color: '#2563eb' },
-    { id: 'u6', name: 'Kiran Desai', role: 'backend', label: 'Executive A', color: '#15803d', leave: false },
-    { id: 'u7', name: 'Neha Joshi', role: 'backend', label: 'Executive B', color: '#c2410c', leave: false },
-    { id: 'u8', name: 'Rahul Verma', role: 'backend', label: 'Executive C', color: '#4f46e5', leave: false },
+    { id: 'u1', name: 'Vikram Shah', role: 'superadmin', title: 'Owner', email: 'vikram@finsol.example', mobile: '9890000001', color: '#7c3aed', active: true },
+    { id: 'u2', name: 'Anjali Rao', role: 'admin', title: 'Operations head', email: 'anjali@finsol.example', mobile: '9890000002', reportsTo: 'u1', color: '#0e7490', active: true },
+    { id: 'u3', name: 'Suresh Iyer', role: 'manager', title: 'Sales and processing manager', email: 'suresh@finsol.example', mobile: '9890000003', reportsTo: 'u2', color: '#b45309', active: true },
+    { id: 'u4', name: 'Priya Patil', role: 'sales', followUp: 'sales', email: 'priya@finsol.example', mobile: '9890000004', reportsTo: 'u3', color: '#db2777', active: true },
+    { id: 'u5', name: 'Arjun Nair', role: 'sales', followUp: 'backend', email: 'arjun@finsol.example', mobile: '9890000005', reportsTo: 'u3', color: '#2563eb', active: true },
+    { id: 'u6', name: 'Kiran Desai', role: 'backend', label: 'Executive A', email: 'kiran@finsol.example', mobile: '9890000006', reportsTo: 'u3', color: '#15803d', leave: false, active: true },
+    { id: 'u7', name: 'Neha Joshi', role: 'backend', label: 'Executive B', email: 'neha@finsol.example', mobile: '9890000007', reportsTo: 'u3', color: '#c2410c', leave: false, active: true },
+    { id: 'u8', name: 'Rahul Verma', role: 'backend', label: 'Executive C', email: 'rahul@finsol.example', mobile: '9890000008', reportsTo: 'u3', color: '#4f46e5', leave: false, active: true },
   ];
   const allocation = { u6: { b2: 'primary', b3: 'primary', b4: 'primary' }, u7: { b1: 'primary', b5: 'primary', b2: 'backup' }, u8: { b4: 'primary', b5: 'primary' } };
   const doc = (type, by, at, status = 'verified') => ({ id: 'd' + Math.random().toString(36).slice(2, 8), type, name: `${type}_${Math.floor(Math.random() * 900 + 100)}.pdf`, by, at, status, comment: '' });
-  const docsFor = (product, by, at, status = 'verified', skip = []) => REQUIRED[product].filter((x) => !skip.includes(x)).map((x) => doc(x, by, at, status));
+  const docsFor = (product, by, at, status = 'verified', skip = []) => masters.products.find((p) => p.name === product).requiredDocs.filter((x) => !skip.includes(x)).map((x) => doc(x, by, at, status));
   const app = (name, mobile, pan, employer, net, extra = {}) => ({ name, mobile, pan, employer, netSalary: net, dob: '1988-06-21', gender: 'Female', fatherName: '', aadhaar: String(Math.floor(Math.random() * 9000 + 1000)), email: '', address: 'Pune, Maharashtra', employmentType: 'Salaried', grossSalary: '', annualIncome: '', avgBalance: '', ...extra });
   const base = (id, o) => ({ id, linked: [], docs: [], requests: [], ocr: {}, bank: {}, decision: null, disbursal: null, eligibility: null, finalSet: false, followUpOwner: null, override: '', unrouted: false, portalCheckedAt: null, tenure: 5, purpose: '', ...o });
   const cases = [
@@ -315,6 +430,12 @@ function seed() {
     base('FS-2026-00110', { status: 'rejected', createdBy: 'u4', createdAt: t - 20 * D, submittedAt: t - 20 * D, pickedAt: t - 19 * D, assignee: 'u7', product: 'Business Loan', bankId: 'b5', amount: 1500000, tenure: 3, applicant: app('Farhan Ali', '9811100110', 'KLMPA1182F', 'Ali Electricals', '', { employmentType: 'Business owner' }), docs: docsFor('Business Loan', 'u4', t - 20 * D), eligibility: { value: 'eligible', reason: '', at: t - 18 * D }, finalSet: true, bank: { ref: 'KSFB-BL-66001', loginDate: t - 16 * D, branch: 'Hadapsar', spocAt: t - 16 * D }, decision: { type: 'rejected', reason: 'Business vintage under the bank\'s 3-year requirement.', date: t - 6 * D } }),
     base('FS-2026-00111', { status: 'not-eligible', createdBy: 'u5', createdAt: t - 2 * D, submittedAt: t - 2 * D, pickedAt: t - 1 * D, assignee: 'u7', product: 'Personal Loan', bankId: 'b1', amount: 1200000, applicant: app('Pooja Nair', '9811100111', 'LMNPN4471G', 'City Retail', 38000), docs: docsFor('Personal Loan', 'u5', t - 2 * D), eligibility: { value: 'not-eligible', reason: 'Existing monthly instalments take 62% of salary; bank allows 50%.', at: t - 4 * H, confirmed: false } }),
   ];
+  cases.forEach((c, i) => {
+    c.source = ['Website enquiry', 'Walk-in', 'Referral partner', 'Phone call'][i % 4]; if (c.source === 'Referral partner') c.partnerId = 'p1';
+    if (c.status === 'draft') return;
+    const p = masters.products.find((x) => x.name === c.product), bp = masters.bankProducts.find((x) => x.bankId === c.bankId && x.productId === p.id);
+    (bp?.extraDocs || []).forEach((t) => { if (!c.docs.some((d) => d.type === t)) c.docs.push(doc(t, c.createdBy, c.createdAt, c.docs[0]?.status || 'verified')); });
+  });
   const audit = [];
   cases.forEach((c) => {
     audit.push({ at: c.createdAt, by: c.createdBy, caseId: c.id, text: 'Case created' });
@@ -332,9 +453,9 @@ function seed() {
     { id: 'n4', userId: 'u3', at: t - 4 * H, caseId: 'FS-2026-00111', text: 'Please confirm: Pooja Nair marked not eligible by Neha Joshi', read: false },
     { id: 'n5', userId: 'u4', at: t - 2 * D, caseId: 'FS-2026-00108', text: 'Sanctioned: Sneha Kulkarni, ₹6 lakh by Metro City Bank', read: true },
   ];
-  return { v: 1, me: 'u4', users, allocation, cases, audit, notifications, emails: [], seq: 112 };
+  return { v: 2, me: 'u4', users, allocation, cases, audit, notifications, emails: [], seq: 112, masters, masterAccess: defaultAccess() };
 }
-function load() { try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return s; } } catch (e) {} return seed(); }
+function load() { try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 2) return s; } } catch (e) {} return seed(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S, (k, v) => (k === 'preview' || k === 'scanning' ? undefined : v))); } catch (e) {} }
 S = load();
 const previews = {}; // uploaded image previews, kept in memory only
@@ -345,8 +466,29 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const user = (id) => S.users.find((u) => u.id === id);
 const me = () => user(S.me);
-const bank = (id) => BANKS.find((b) => b.id === id);
-const spocsFor = (b, product) => { const m = b.spocs.filter((sp) => !sp.products || sp.products.includes(product)); return m.length ? m : b.spocs; };
+/* master-data accessors */
+const M = () => S.masters;
+const bank = (id) => M().banks.find((b) => b.id === id);
+const banks = () => M().banks.filter((b) => b.active).sort((a, b) => a.no - b.no);
+const product = (id) => M().products.find((p) => p.id === id);
+const productByName = (n) => M().products.find((p) => p.name === n);
+const productNames = () => M().products.filter((p) => p.active).map((p) => p.name);
+const bankProduct = (bankId, productName) => { const p = productByName(productName); return p ? M().bankProducts.find((bp) => bp.bankId === bankId && bp.productId === p.id && bp.active) : null; };
+const banksFor = (productName) => banks().filter((b) => bankProduct(b.id, productName));
+const requiredDocs = (productName, bankId) => [...new Set([...(productByName(productName)?.requiredDocs || []), ...(bankProduct(bankId, productName)?.extraDocs || [])])];
+const docType = (k) => M().docTypes.find((d) => d.id === k);
+const docTypesActive = () => M().docTypes.filter((d) => d.active);
+const docLabel = (k) => docType(k)?.name || k;
+const slaH = (k) => +(M().sla.find((x) => x.id === k)?.hours) || 8;
+const activeNames = (key) => M()[key].filter((x) => x.active).map((x) => x.name);
+const spocsFor = (b, productName) => {
+  const pid = productByName(productName)?.id;
+  const l1 = M().spocs.filter((x) => x.bankId === b.id && x.active && String(x.level).startsWith('Level 1'));
+  const m = l1.filter((x) => !x.products?.length || x.products.includes(pid));
+  return m.length ? m : l1;
+};
+const fillTpl = (s, vars) => String(s).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+const newCaseId = () => `${M().settings.casePrefix}-${new Date().getFullYear()}-${String(++S.seq).padStart(5, '0')}`;
 const getCase = (id) => S.cases.find((c) => c.id === id);
 const inr = (n) => (n === '' || n == null || isNaN(n) ? '—' : '₹' + Math.round(+n).toLocaleString('en-IN'));
 const amt = (n) => { n = +n; if (!n) return '—'; return n >= 1e7 ? `₹${+(n / 1e7).toFixed(2)} crore` : n >= 1e5 ? `₹${+(n / 1e5).toFixed(2)} lakh` : inr(n); };
@@ -358,17 +500,16 @@ const isRole = (...r) => r.includes(me().role);
 const isMgr = () => isRole('manager', 'admin', 'superadmin');
 const chip = (status, extra = '') => `<span class="chip ${STATUS[status].tone ? 'chip--' + STATUS[status].tone : ''}">${STATUS[status].label}${extra}</span>`;
 const avatar = (u, size = 32) => `<span class="avatar" style="background:${u.color};width:${size}px;height:${size}px">${u.name.split(' ').map((w) => w[0]).join('')}</span>`;
-const docLabel = (k) => DOC_TYPES[k] || k;
 let toastT;
 const toast = (msg) => { $('.toast')?.remove(); const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg; document.body.append(el); clearTimeout(toastT); toastT = setTimeout(() => el.remove(), 3000); };
 const salesOf = (c) => user(c.createdBy);
 const managerIds = () => S.users.filter((u) => u.role === 'manager').map((u) => u.id);
 const adminIds = () => S.users.filter((u) => ['admin', 'superadmin'].includes(u.role)).map((u) => u.id);
-const allocatedTo = (bankId, type) => S.users.filter((u) => u.role === 'backend' && S.allocation[u.id]?.[bankId] === type);
+const allocatedTo = (bankId, type) => S.users.filter((u) => u.role === 'backend' && u.active !== false && S.allocation[u.id]?.[bankId] === type);
 const myBanks = (u) => Object.entries(S.allocation[u.id] || {}).filter(([, v]) => v).map(([k]) => k);
 const followUpOwner = (c) => { const mode = c.followUpOwner || salesOf(c).followUp || 'sales'; return mode === 'sales' ? c.createdBy : c.assignee || c.createdBy; };
 const openReqs = (c, kind) => c.requests.filter((r) => r.status !== 'done' && (!kind || r.kind === kind));
-const missingDocs = (c) => (REQUIRED[c.product] || []).filter((t) => !c.docs.some((d) => d.type === t));
+const missingDocs = (c) => requiredDocs(c.product, c.bankId).filter((t) => !c.docs.some((d) => d.type === t));
 
 function log(c, text, by = S.me) { S.audit.unshift({ at: now(), by, caseId: c ? c.id : null, text }); }
 function notify(userIds, text, c, email = false) {
@@ -390,7 +531,7 @@ function inMyQueue(c, u = me()) {
   if (c.status !== 'submitted' || c.assignee || u.role !== 'backend' || u.leave) return false;
   const type = S.allocation[u.id]?.[c.bankId];
   if (type === 'primary') return true;
-  if (type === 'backup') { const prim = allocatedTo(c.bankId, 'primary').filter((x) => !x.leave); return prim.length === 0 || hoursSince(c.submittedAt) > SLA_H.pickup; }
+  if (type === 'backup') { const prim = allocatedTo(c.bankId, 'primary').filter((x) => !x.leave); return prim.length === 0 || hoursSince(c.submittedAt) > slaH('pickup'); }
   return false;
 }
 const isAssignee = (c) => c.assignee === S.me;
@@ -482,17 +623,17 @@ function modal({ title, body, submit = 'Save', danger = false, onSubmit, wide = 
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#overlayRoot').innerHTML = ''; closeDrawer(); } });
 const dueIn = (days) => new Date(now() + days * D).toISOString().slice(0, 10);
 const userOpts = (list, sel) => list.map((u) => `<option value="${u.id}" ${u.id === sel ? 'selected' : ''}>${esc(u.name)}${u.label ? ' (' + u.label + ')' : ''} · ${ROLES[u.role]}</option>`).join('');
-const docChecks = (name, preselect = []) => `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">${Object.entries(DOC_TYPES).map(([k, v]) => `<label class="switch"><input type="checkbox" name="${name}" value="${k}" ${preselect.includes(k) ? 'checked' : ''}> ${v}</label>`).join('')}</div>`;
+const docChecks = (name, preselect = []) => `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">${docTypesActive().map((d) => [d.id, d.name]).map(([k, v]) => `<label class="switch"><input type="checkbox" name="${name}" value="${k}" ${preselect.includes(k) ? 'checked' : ''}> ${v}</label>`).join('')}</div>`;
 
 /* =================== ACTION HANDLERS =================== */
 const ACT = {
   reset() { modal({ title: 'Reset demo data?', body: '<p>All cases, notifications and settings go back to the sample data.</p>', submit: 'Reset', danger: true, onSubmit() { const keep = S.me; S = seed(); S.me = keep; toast('Demo data reset'); } }); },
   newCase() {
-    modal({ title: 'New case', body: `<p class="muted small">Start with the customer's mobile number. We check for open cases with the same number first.</p><label class="field">Customer mobile number<input name="mobile" inputmode="numeric" maxlength="10" placeholder="10-digit mobile"></label><label class="field">Customer name (optional, OCR will fill it)<input name="name"></label>`, submit: 'Create draft', onSubmit(f) {
+    modal({ title: 'New case', body: `<p class="muted small">Start with the customer's mobile number. We check for open cases with the same number first.</p><label class="field">Customer mobile number<input name="mobile" inputmode="numeric" maxlength="10" placeholder="10-digit mobile"></label><label class="field">Customer name (optional, OCR will fill it)<input name="name"></label><div class="form-grid"><label class="field">Lead source<select name="source">${activeNames('leadSources').map((o) => `<option>${esc(o)}</option>`).join('')}</select></label><label class="field">Referral partner (if any)<select name="partnerId"><option value="">None</option>${M().partners.filter((x) => x.active).map((x) => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label></div>`, submit: 'Create draft', onSubmit(f) {
       if (!/^[6-9]\d{9}$/.test(f.mobile || '')) return 'Enter a valid 10-digit mobile number.';
       const dup = S.cases.find((c) => c.applicant.mobile === f.mobile && !['rejected', 'disbursed', 'withdrawn'].includes(c.status) && !(c.status === 'not-eligible' && c.eligibility?.confirmed));
-      const id = `FS-2026-${String(++S.seq).padStart(5, '0')}`;
-      const c = { id, status: 'draft', createdBy: S.me, createdAt: now(), product: 'Personal Loan', bankId: '', amount: '', tenure: 5, purpose: '', applicant: { name: f.name || '', mobile: f.mobile, fatherName: '', dob: '', gender: '', pan: '', aadhaar: '', email: '', address: '', employmentType: '', employer: '', netSalary: '', grossSalary: '', annualIncome: '', avgBalance: '' }, linked: [], docs: [], requests: [], ocr: {}, bank: {}, decision: null, disbursal: null, eligibility: null, finalSet: false, followUpOwner: null, override: '', unrouted: false };
+      const id = newCaseId();
+      const c = { id, source: f.source, partnerId: f.partnerId || null, status: 'draft', createdBy: S.me, createdAt: now(), product: 'Personal Loan', bankId: '', amount: '', tenure: 5, purpose: '', applicant: { name: f.name || '', mobile: f.mobile, fatherName: '', dob: '', gender: '', pan: '', aadhaar: '', email: '', address: '', employmentType: '', employer: '', netSalary: '', grossSalary: '', annualIncome: '', avgBalance: '' }, linked: [], docs: [], requests: [], ocr: {}, bank: {}, decision: null, disbursal: null, eligibility: null, finalSet: false, followUpOwner: null, override: '', unrouted: false };
       if (f.name) c.ocr.name = { values: [], source: 'manual' };
       S.cases.unshift(c); log(c, 'Case created');
       if (dup) toast(`Possible duplicate: ${dup.id} is open for this mobile number`);
@@ -514,7 +655,9 @@ const ACT = {
     if (!c.bankId) req.push('Bank applied for'); if (!+c.amount) req.push('Loan amount');
     if (req.length) { toast('Fill in: ' + req.join(', ')); return; }
     if (a.pan && !/^[A-Z]{5}\d{4}[A-Z]$/.test(a.pan)) { toast('PAN should look like ABCDE1234F'); return; }
-    const miss = missingDocs(c);
+    const miss = missingDocs(c), bp = bankProduct(c.bankId, c.product);
+    if (!bp) { toast(`${bank(c.bankId)?.name || 'This bank'} does not offer ${c.product}. Choose another bank.`); return; }
+    if (+c.amount < bp.minAmount || +c.amount > bp.maxAmount) { toast(`Amount must be between ${amt(bp.minAmount)} and ${amt(bp.maxAmount)} for ${bank(c.bankId).name}.`); return; }
     modal({ title: 'Submit case for processing', body: `<div class="note"><b>${esc(a.name)}</b> · ${c.product} · ${amt(c.amount)} · ${bank(c.bankId).name}</div>${miss.length ? `<div class="note note--warn">Missing documents: <b>${miss.map(docLabel).join(', ')}</b>. You can still submit with a reason the Backend Executive will see.</div><label class="field">Reason for submitting without them<textarea name="override"></textarea></label>` : '<p class="muted small">All mandatory documents are uploaded. The case will be routed to the Backend Executives allocated to this bank, and everyone on the case is notified.</p>'}`, submit: 'Submit case', onSubmit(f) {
       if (miss.length && !f.override) return 'Give a reason or upload the missing documents first.';
       submitCase(c, f.override); toast('Submitted and routed to processing');
@@ -529,7 +672,7 @@ const ACT = {
   requestDocs(ds) {
     const c = getCase(ds.case), owner = followUpOwner(c);
     const pre = [...missingDocs(c), ...c.docs.filter((d) => d.status === 'replace').map((d) => d.type)];
-    modal({ title: 'Request documents', wide: true, body: `<div class="field">Documents needed${docChecks('items', pre)}</div><label class="field">Note for the follow-up owner<textarea name="note" placeholder="What is missing or wrong"></textarea></label><div class="form-grid"><label class="field">Follow-up owner<select name="owner">${userOpts([salesOf(c), user(c.assignee)].filter(Boolean), owner)}</select></label><label class="field">Due date<input type="date" name="due" value="${dueIn(2)}"></label></div><p class="muted small">Default owner comes from ${esc(salesOf(c).name)}'s arrangement: <b>${(c.followUpOwner || salesOf(c).followUp) === 'sales' ? 'Sales Executive follows up' : 'Backend Executive follows up'}</b>.</p>`, submit: 'Send request', onSubmit(f) {
+    modal({ title: 'Request documents', wide: true, body: `<div class="field">Documents needed${docChecks('items', pre)}</div><label class="field">Note for the follow-up owner<textarea name="note" placeholder="What is missing or wrong"></textarea></label><div class="form-grid"><label class="field">Follow-up owner<select name="owner">${userOpts([salesOf(c), user(c.assignee)].filter(Boolean), owner)}</select></label><label class="field">Due date<input type="date" name="due" value="${dueIn(slaH('request') / 24)}"></label></div><p class="muted small">Default owner comes from ${esc(salesOf(c).name)}'s arrangement: <b>${(c.followUpOwner || salesOf(c).followUp) === 'sales' ? 'Sales Executive follows up' : 'Backend Executive follows up'}</b>.</p>`, submit: 'Send request', onSubmit(f) {
       const items = f._all('items'); if (!items.length) return 'Pick at least one document.';
       requestItems(c, 'docs', items, f.note, f.owner, Date.parse(f.due)); toast('Request sent');
     } });
@@ -568,10 +711,11 @@ const ACT = {
   },
   notEligible(ds) {
     const c = getCase(ds.case);
-    modal({ title: 'Mark not eligible', body: `<label class="field">Reason<textarea name="reason" placeholder="For example: existing instalments too high for this bank"></textarea></label><p class="muted small">The Manager confirms before the case closes. The Sales Executive can copy it to another bank.</p>`, submit: 'Send for confirmation', danger: true, onSubmit(f) {
-      if (!f.reason) return 'Give a reason.';
-      c.eligibility = { value: 'not-eligible', reason: f.reason, at: now(), confirmed: false }; c.status = 'not-eligible';
-      log(c, `Marked not eligible: ${f.reason}`);
+    modal({ title: 'Mark not eligible', body: `<label class="field">Reason<select name="code">${activeNames('neReasons').map((o) => `<option>${esc(o)}</option>`).join('')}</select></label><label class="field">Details<textarea name="reason" placeholder="For example: instalments take 62% of salary; bank allows 50%"></textarea></label><p class="muted small">The Manager confirms before the case closes. The Sales Executive can copy it to another bank.</p>`, submit: 'Send for confirmation', danger: true, onSubmit(f) {
+      if (!f.code) return 'Choose a reason.';
+      const why = f.code + (f.reason ? ': ' + f.reason : '');
+      c.eligibility = { value: 'not-eligible', reason: why, code: f.code, at: now(), confirmed: false }; c.status = 'not-eligible';
+      log(c, `Marked not eligible: ${why}`);
       notify(managerIds(), `Please confirm: ${c.applicant.name} marked not eligible by ${me().name}`, c, true);
       notify([c.createdBy], `${c.applicant.name} marked not eligible for ${bank(c.bankId).name}`, c, true);
     } });
@@ -581,12 +725,13 @@ const ACT = {
   finalSet(ds) { const c = getCase(ds.case); modal({ title: 'Upload final document set', body: `<p>Upload the documents exactly as the ${esc(bank(c.bankId).name)} portal needs them (renamed or merged PDFs).</p><div class="note note--info">Prototype: confirm to record that the final set (${c.docs.filter((d) => d.status === 'verified').length} verified documents) is uploaded.</div>`, submit: 'Final set uploaded', onSubmit() { c.finalSet = true; log(c, 'Final document set uploaded for bank login'); } }); },
   reference(ds) {
     const c = getCase(ds.case), b = bank(c.bankId);
-    modal({ title: `Bank login: ${b.name}`, body: `<div class="form-grid"><label class="field full">Bank reference number<input name="ref" placeholder="As shown on the bank portal"></label><label class="field">Login date<input type="date" name="date" value="${dueIn(0)}"></label><label class="field">Branch or scheme code (optional)<input name="branch"></label></div><div class="note">On save, the CRM emails ${spocsFor(b, c.product).map((s) => `<b>${esc(s.name)}</b> (${esc(s.product)})`).join(', ')} and notifies everyone on the case.</div>`, submit: 'Save and email SPOC', onSubmit(f) {
+    modal({ title: `Bank login: ${b.name}`, body: `<div class="form-grid"><label class="field full">Bank reference number<input name="ref" placeholder="As shown on the bank portal"></label><label class="field">Login date<input type="date" name="date" value="${dueIn(0)}"></label><label class="field">Branch or scheme code (optional)<input name="branch"></label></div><div class="note">On save, the CRM emails ${spocsFor(b, c.product).map((s) => `<b>${esc(s.name)}</b> (${esc(s.designation || '')})`).join(', ')} and notifies everyone on the case.</div>`, submit: 'Save and email SPOC', onSubmit(f) {
       if (!f.ref) return 'The bank reference number is required.';
       c.bank = { ref: f.ref.trim(), loginDate: Date.parse(f.date) || now(), branch: f.branch, spocAt: now() };
       c.status = 'review'; c.portalCheckedAt = now();
-      const sales = salesOf(c), be = user(c.assignee) || me();
-      spocsFor(b, c.product).forEach((s) => S.emails.unshift({ at: now(), to: `${s.name} <${s.email}>`, cc: `${be.name}, ${sales.name}`, subject: `New login: ${c.applicant.name}, ${c.product}, ${amt(c.amount)}, Ref ${c.bank.ref}`, body: `Dear ${s.name.split(' ')[0]},\n\nWe have logged the following file on your portal:\n\nCustomer: ${c.applicant.name}\nProduct: ${c.product}\nAmount: ${amt(c.amount)}\nBank reference number: ${c.bank.ref}\nLogin date: ${day(c.bank.loginDate)}${c.bank.branch ? '\nBranch / scheme: ' + c.bank.branch : ''}\nFinsol case number: ${c.id}\n\nFinsol contacts:\nBackend Executive: ${be.name}\nSales Executive: ${sales.name}\n\nRegards,\nFinsol Processing Team`, spoc: true, caseId: c.id }));
+      const sales = salesOf(c), be = user(c.assignee) || me(), tpl = M().templates.find((x) => x.id === 'spoc');
+      const vars = { customer: c.applicant.name, product: c.product, amount: amt(c.amount), ref: c.bank.ref, date: day(c.bank.loginDate), case: c.id, backend: be.name, sales: sales.name };
+      spocsFor(b, c.product).forEach((s) => S.emails.unshift({ at: now(), to: `${s.name} <${s.email}>`, cc: `${be.name}, ${sales.name}`, subject: fillTpl(tpl.subject, { ...vars, spoc: s.name.split(' ')[0] }), body: fillTpl(tpl.body, { ...vars, spoc: s.name.split(' ')[0] }), spoc: true, caseId: c.id }));
       log(c, `Logged in with bank, reference ${c.bank.ref}; SPOC emailed`);
       notify([c.createdBy, c.assignee, ...managerIds()], `Logged in with ${b.name}: ${c.applicant.name}, ref ${c.bank.ref}`, c, true);
       toast('Reference saved, bank SPOC emailed');
@@ -595,15 +740,15 @@ const ACT = {
   checked(ds) { const c = getCase(ds.case); c.portalCheckedAt = now(); log(c, 'Bank portal checked: no change'); save(); toast('Marked as checked today'); render(); },
   query(ds) {
     const c = getCase(ds.case), owner = followUpOwner(c);
-    modal({ title: 'Log bank query (discrepancy)', wide: true, body: `<label class="field">Query as written by the bank<textarea name="note"></textarea></label><div class="field">Documents or clarifications needed${docChecks('items')}</div><div class="form-grid"><label class="field">Follow-up owner<select name="owner">${userOpts([salesOf(c), user(c.assignee)].filter(Boolean), owner)}</select></label><label class="field">Bank's due date<input type="date" name="due" value="${dueIn(2)}"></label></div>`, submit: 'Log query', onSubmit(f) {
+    modal({ title: 'Log bank query (discrepancy)', wide: true, body: `<label class="field">Type of query<select name="qreason">${activeNames('queryReasons').map((o) => `<option>${esc(o)}</option>`).join('')}</select></label><label class="field">Query as written by the bank<textarea name="note"></textarea></label><div class="field">Documents or clarifications needed${docChecks('items')}</div><div class="form-grid"><label class="field">Follow-up owner<select name="owner">${userOpts([salesOf(c), user(c.assignee)].filter(Boolean), owner)}</select></label><label class="field">Bank's due date<input type="date" name="due" value="${dueIn(2)}"></label></div>`, submit: 'Log query', onSubmit(f) {
       if (!f.note) return 'Write the bank\'s query.';
-      requestItems(c, 'query', f._all('items'), f.note, f.owner, Date.parse(f.due)); toast('Query logged and assigned');
+      requestItems(c, 'query', f._all('items'), `${f.qreason}: ${f.note}`, f.owner, Date.parse(f.due)); toast('Query logged and assigned');
     } });
   },
   decision(ds) {
     const c = getCase(ds.case);
-    modal({ title: 'Record bank decision', wide: true, body: `<div class="pick" role="radiogroup"><label class="switch"><input type="radio" name="type" value="sanctioned" checked> Sanctioned</label><label class="switch"><input type="radio" name="type" value="rejected"> Rejected</label></div><div class="form-grid"><label class="field">Sanctioned amount (₹)<input name="amount" inputmode="numeric" value="${c.amount}"></label><label class="field">Interest rate (% a year)<input name="rate" inputmode="decimal"></label><label class="field">Tenure (years)<input name="tenure" inputmode="numeric" value="${c.tenure || ''}"></label><label class="field">Processing fee<input name="fee" placeholder="For example 0.5%"></label><label class="field full">Conditions (optional)<input name="conditions"></label><label class="field full">Rejection reason (if rejected)<textarea name="reason"></textarea></label><label class="field full">Sanction or rejection letter<input type="file" name="letter" accept="image/*,application/pdf"></label></div>`, submit: 'Save decision', onSubmit(f) {
-      if (f.type === 'rejected') { if (!f.reason) return 'Give the rejection reason from the bank.'; c.decision = { type: 'rejected', reason: f.reason, date: now() }; c.status = 'rejected'; }
+    modal({ title: 'Record bank decision', wide: true, body: `<div class="pick" role="radiogroup"><label class="switch"><input type="radio" name="type" value="sanctioned" checked> Sanctioned</label><label class="switch"><input type="radio" name="type" value="rejected"> Rejected</label></div><div class="form-grid"><label class="field">Sanctioned amount (₹)<input name="amount" inputmode="numeric" value="${c.amount}"></label><label class="field">Interest rate (% a year)<input name="rate" inputmode="decimal"></label><label class="field">Tenure (years)<input name="tenure" inputmode="numeric" value="${c.tenure || ''}"></label><label class="field">Processing fee<input name="fee" placeholder="For example 0.5%"></label><label class="field full">Conditions (optional)<input name="conditions"></label><label class="field">Rejection reason (if rejected)<select name="rcode">${activeNames('rejectReasons').map((o) => `<option>${esc(o)}</option>`).join('')}</select></label><label class="field">Bank's words (optional)<input name="reason"></label><label class="field full">Sanction or rejection letter<input type="file" name="letter" accept="image/*,application/pdf"></label></div>`, submit: 'Save decision', onSubmit(f) {
+      if (f.type === 'rejected') { f.reason = f.rcode + (f.reason ? ': ' + f.reason : ''); c.decision = { type: 'rejected', reason: f.reason, code: f.rcode, date: now() }; c.status = 'rejected'; }
       else { if (!+f.amount || !f.rate) return 'Sanctioned amount and interest rate are required.'; c.decision = { type: 'sanctioned', amount: +f.amount, rate: +f.rate, tenure: +f.tenure, fee: f.fee, conditions: f.conditions, date: now(), letter: f.letter?.name || 'sanction_letter.pdf' }; c.status = 'sanctioned'; }
       c.requests.forEach((r) => { if (r.status !== 'done') r.status = 'done'; });
       log(c, f.type === 'rejected' ? `Bank rejected: ${f.reason}` : `Bank sanctioned ${amt(f.amount)} at ${f.rate}%`);
@@ -625,9 +770,9 @@ const ACT = {
   copyBank(ds) {
     const c = getCase(ds.case);
     const used = [c.bankId, ...c.linked.map((id) => getCase(id)?.bankId)];
-    modal({ title: 'Copy to another bank', body: `<p class="muted small">Creates a linked case for ${esc(c.applicant.name)} with the same documents, routed to that bank's Backend Executives.</p><label class="field">Bank<select name="bankId">${BANKS.filter((b) => !used.includes(b.id)).map((b) => `<option value="${b.id}">${b.name}</option>`).join('')}</select></label><label class="field">Loan amount (₹)<input name="amount" value="${c.amount}"></label>`, submit: 'Create and submit', onSubmit(f) {
+    modal({ title: 'Copy to another bank', body: `<p class="muted small">Creates a linked case for ${esc(c.applicant.name)} with the same documents, routed to that bank's Backend Executives.</p><label class="field">Bank<select name="bankId">${banks().filter((b) => !used.includes(b.id)).map((b) => `<option value="${b.id}">${b.name}</option>`).join('')}</select></label><label class="field">Loan amount (₹)<input name="amount" value="${c.amount}"></label>`, submit: 'Create and submit', onSubmit(f) {
       if (!f.bankId) return 'All banks already have a case for this customer.';
-      const id = `FS-2026-${String(++S.seq).padStart(5, '0')}`;
+      const id = newCaseId();
       const n = JSON.parse(JSON.stringify(c));
       Object.assign(n, { id, bankId: f.bankId, amount: +f.amount || c.amount, status: 'draft', createdAt: now(), assignee: null, pickedAt: null, requests: [], bank: {}, decision: null, disbursal: null, eligibility: null, finalSet: false, unrouted: false, linked: [c.id, ...c.linked], docs: c.docs.filter((d) => d.status !== 'superseded').map((d) => ({ ...d, status: 'uploaded', comment: '' })) });
       c.linked.forEach((lid) => getCase(lid)?.linked.push(id)); c.linked.push(id);
@@ -640,7 +785,6 @@ const ACT = {
   readAll() { S.notifications.forEach((n) => { if (n.userId === S.me) n.read = true; }); save(); render(); openDrawer(); },
   openNotif(ds) { const n = S.notifications.find((x) => x.id === ds.id); n.read = true; save(); closeDrawer(); if (n.caseId && getCase(n.caseId)) location.hash = '#case/' + n.caseId; else render(); },
   email(ds) { const e = S.emails[+ds.i]; modal({ title: e.subject, body: `<div class="email"><div><b>To:</b> ${esc(e.to)}</div>${e.cc ? `<div><b>Cc:</b> ${esc(e.cc)}</div>` : ''}<div><b>Sent:</b> ${dt(e.at)}</div><hr style="border:0;border-top:1px solid var(--line);width:100%"><pre>${esc(e.body)}</pre></div>`, submit: '' }); },
-  addSpoc(ds) { const b = bank(ds.bank); modal({ title: `Add SPOC for ${b.name}`, body: '<div class="form-grid"><label class="field">Name<input name="name"></label><label class="field">Email<input name="email" type="email"></label><label class="field full">Products covered<input name="product" value="All products"></label></div>', submit: 'Add', onSubmit(f) { if (!f.name || !/@/.test(f.email || '')) return 'Name and a valid email are needed.'; b.spocs.push({ name: f.name, email: f.email, product: f.product }); log(null, `Added SPOC ${f.name} for ${b.name}`); } }); },
 };
 
 function uploadDoc(c, type, file, reqId) {
@@ -649,7 +793,7 @@ function uploadDoc(c, type, file, reqId) {
   c.docs.push(d); render();
   setTimeout(() => {
     d.scanning = false;
-    const n = c.status === 'draft' ? applyOcr(c, type) : 0;
+    const n = c.status === 'draft' && docType(type)?.ocr ? applyOcr(c, type) : 0;
     log(c, `Uploaded ${docLabel(type)}${n ? `; OCR read ${n} field${n > 1 ? 's' : ''}` : ''}`);
     save(); render();
     toast(n ? `OCR read ${n} field${n > 1 ? 's' : ''} from ${docLabel(type)}. Please check them.` : `${docLabel(type)} uploaded`);
@@ -664,9 +808,10 @@ const NAV = [
   ['queue', 'Processing queue', ['backend', 'manager', 'admin', 'superadmin'], '<path d="M4 6h16M4 12h16M4 18h10"/>'],
   ['tasks', 'My tasks', ['sales', 'backend'], '<path d="M9 11l3 3 8-8M20 12v7H4V5h11"/>'],
   ['sep', 'Administration', ['manager', 'admin', 'superadmin']],
-  ['allocation', 'Bank allocation', ['admin', 'superadmin'], '<path d="M3 21h18M5 10v8M10 10v8M14 10v8M19 10v8M3 9l9-5 9 5z"/>'],
+  ['allocation', 'Bank allocation', ['manager', 'admin', 'superadmin'], '<path d="M3 21h18M5 10v8M10 10v8M14 10v8M19 10v8M3 9l9-5 9 5z"/>'],
   ['team', 'Team and follow-up', ['manager', 'admin', 'superadmin'], '<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6M17 11a3 3 0 100-6M18 14c2 .5 4 2.5 4 6"/>'],
-  ['banks', 'Banks and SPOCs', ['admin', 'superadmin'], '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'],
+  ['masters', 'Masters', ['manager', 'admin', 'superadmin'], '<path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'],
+  ['access', 'Master access', ['superadmin'], '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>'],
   ['emails', 'Emails sent', ['admin', 'superadmin'], '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>'],
   ['audit', 'Audit log', ['manager', 'admin', 'superadmin'], '<path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/>'],
 ];
@@ -678,7 +823,7 @@ function renderSide() {
   const u = me(), route = (location.hash.slice(1) || 'dashboard').split('/')[0];
   const counts = { queue: u.role === 'backend' ? queueCases().length : S.cases.filter((c) => c.unrouted && c.status === 'submitted').length, tasks: myTasks().length };
   $('#side').innerHTML = `<div class="brand"><span class="brand__mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 20V5h12M6 12h9"/></svg></span><span>Finsol<small>Loan CRM</small></span></div>
-    ${NAV.filter((n) => n[2].includes(u.role)).map(([id, label, , ic]) => id === 'sep' ? `<div class="nav-sep">${label}</div>` : `<a class="nav-item ${route === id || (route === 'case' && id === 'cases') ? 'active' : ''}" href="#${id}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg>${label}${counts[id] ? `<span class="count">${counts[id]}</span>` : ''}</a>`).join('')}
+    ${NAV.filter((n) => n[2].includes(u.role)).map(([id, label, , ic]) => id === 'sep' ? `<div class="nav-sep">${label}</div>` : `<a class="nav-item ${route === id || (route === 'case' && id === 'cases') || (route === 'master' && id === 'masters') ? 'active' : ''}" href="#${id}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg>${label}${counts[id] ? `<span class="count">${counts[id]}</span>` : ''}</a>`).join('')}
     <div class="side__foot">Signed in as <b>${esc(u.name)}</b><br>${ROLES[u.role]}${u.label ? ' · ' + u.label : ''}</div>`;
 }
 
@@ -692,11 +837,11 @@ const caseTable = (list, cols = 'full') => list.length ? `<div class="table-wrap
 function slaBreaches(list) {
   const out = [];
   list.forEach((c) => {
-    if (c.status === 'submitted' && hoursSince(c.submittedAt) > SLA_H.pickup) out.push({ c, what: `Not picked up for ${Math.round(hoursSince(c.submittedAt))} h (target ${SLA_H.pickup} h)` });
-    if (c.status === 'processing' && c.pickedAt && hoursSince(c.pickedAt) > SLA_H.verify) out.push({ c, what: `In verification for ${Math.round(hoursSince(c.pickedAt))} h (target ${SLA_H.verify} h)` });
-    if (c.status === 'ready' && c.eligibility && hoursSince(c.eligibility.at) > SLA_H.login) out.push({ c, what: `Waiting for bank login ${Math.round(hoursSince(c.eligibility.at))} h` });
+    if (c.status === 'submitted' && hoursSince(c.submittedAt) > slaH('pickup')) out.push({ c, what: `Not picked up for ${Math.round(hoursSince(c.submittedAt))} h (target ${slaH('pickup')} h)` });
+    if (c.status === 'processing' && c.pickedAt && hoursSince(c.pickedAt) > slaH('verify')) out.push({ c, what: `In verification for ${Math.round(hoursSince(c.pickedAt))} h (target ${slaH('verify')} h)` });
+    if (c.status === 'ready' && c.eligibility && hoursSince(c.eligibility.at) > slaH('login')) out.push({ c, what: `Waiting for bank login ${Math.round(hoursSince(c.eligibility.at))} h` });
     c.requests.filter((r) => r.status === 'open' && r.due < now()).forEach((r) => out.push({ c, what: `${r.kind === 'docs' ? 'Document request' : 'Bank query'} overdue (owner ${user(r.owner).name})` }));
-    if (['review', 'query'].includes(c.status) && hoursSince(c.portalCheckedAt || 0) > 24) out.push({ c, what: 'Bank portal not checked in the last day' });
+    if (['review', 'query'].includes(c.status) && hoursSince(c.portalCheckedAt || 0) > slaH('portal')) out.push({ c, what: 'Bank portal not checked in the last day' });
   });
   return out;
 }
@@ -714,7 +859,7 @@ function viewDashboard() {
   }
   if (u.role === 'backend') {
     const mine = list.filter((c) => c.assignee === u.id), q = queueCases();
-    const notChecked = mine.filter((c) => ['review', 'query'].includes(c.status) && hoursSince(c.portalCheckedAt || 0) > 24);
+    const notChecked = mine.filter((c) => ['review', 'query'].includes(c.status) && hoursSince(c.portalCheckedAt || 0) > slaH('portal'));
     return `${head}<div class="kpis"><a class="kpi ${q.length ? 'kpi--warn' : ''}" href="#queue"><b>${q.length}</b><span>In my queue</span></a><a class="kpi" href="#cases"><b>${mine.filter((c) => ['processing', 'docs-pending', 'ready'].includes(c.status)).length}</b><span>In processing</span></a><a class="kpi" href="#tasks"><b>${tasks.length}</b><span>Tasks on me</span></a><a class="kpi" href="#cases"><b>${mine.filter((c) => ['review', 'query'].includes(c.status)).length}</b><span>With banks</span></a><div class="kpi ${notChecked.length ? 'kpi--bad' : ''}"><b>${notChecked.length}</b><span>Bank portal not checked today</span></div></div>
       <div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>Queue for my banks</h2><a href="#queue" class="small">Open queue</a></div>${caseTable(q, 'short')}</div>
       <div class="grid2">${taskCard}<div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>My cases</h2></div>${caseTable(mine.filter((c) => OPEN.includes(c.status) || c.status === 'not-eligible').slice(0, 6), 'short')}</div></div>`;
@@ -724,7 +869,7 @@ function viewDashboard() {
   const unrouted = list.filter((c) => c.unrouted && c.status === 'submitted');
   const confirmNE = list.filter((c) => c.status === 'not-eligible' && !c.eligibility?.confirmed);
   const workload = S.users.filter((x) => x.role === 'backend').map((x) => [x, list.filter((c) => c.assignee === x.id && OPEN.includes(c.status)).length]);
-  const bankRows = BANKS.map((b) => { const bc = list.filter((c) => c.bankId === b.id); return `<tr><td>${b.name}</td><td class="num">${bc.filter((c) => c.bank.ref).length}</td><td class="num">${bc.filter((c) => ['sanctioned', 'disbursed'].includes(c.status)).length}</td><td class="num">${bc.filter((c) => c.status === 'rejected').length}</td><td class="num">${amt(bc.filter((c) => c.disbursal).reduce((s, c) => s + c.disbursal.amount, 0))}</td></tr>`; }).join('');
+  const bankRows = banks().map((b) => { const bc = list.filter((c) => c.bankId === b.id); return `<tr><td>${b.name}</td><td class="num">${bc.filter((c) => c.bank.ref).length}</td><td class="num">${bc.filter((c) => ['sanctioned', 'disbursed'].includes(c.status)).length}</td><td class="num">${bc.filter((c) => c.status === 'rejected').length}</td><td class="num">${amt(bc.filter((c) => c.disbursal).reduce((s, c) => s + c.disbursal.amount, 0))}</td></tr>`; }).join('');
   return `${head}<div class="kpis"><a class="kpi" href="#cases"><b>${list.filter((c) => OPEN.includes(c.status)).length}</b><span>Open cases</span></a><a class="kpi ${unrouted.length ? 'kpi--bad' : ''}" href="#queue"><b>${unrouted.length}</b><span>Unrouted</span></a><div class="kpi ${confirmNE.length ? 'kpi--warn' : ''}"><b>${confirmNE.length}</b><span>Not-eligible to confirm</span></div><div class="kpi ${sla.length ? 'kpi--bad' : ''}"><b>${sla.length}</b><span>SLA alerts</span></div><div class="kpi"><b>${amt(disbMonth.reduce((s, c) => s + c.disbursal.amount, 0))}</b><span>Disbursed this month</span></div></div>
     <div class="grid2"><div class="card"><div class="card__head"><h2>Pipeline by status</h2></div><div class="bar-list">${Object.keys(STATUS).map((s) => `<a class="bar-row" href="#cases"><span>${STATUS[s].label}</span><span class="bar"><i style="width:${(count([s]) / max) * 100}%;background:${STATUS[s].tone === 'good' ? 'var(--good)' : STATUS[s].tone === 'bad' ? 'var(--bad)' : STATUS[s].tone === 'warn' ? 'var(--warn)' : 'var(--brand)'}"></i></span><b class="num">${count([s])}</b></a>`).join('')}</div></div>
     <div class="card"><div class="card__head"><h2>Needs attention</h2></div>${[...confirmNE.map((c) => ({ c, what: 'Confirm not eligible: ' + c.eligibility.reason })), ...unrouted.map((c) => ({ c, what: 'No Backend Executive for ' + bank(c.bankId).name })), ...sla].length ? `<div style="display:grid;gap:8px">${[...confirmNE.map((c) => ({ c, what: 'Confirm not eligible: ' + c.eligibility.reason })), ...unrouted.map((c) => ({ c, what: 'No Backend Executive for ' + bank(c.bankId).name })), ...sla].slice(0, 8).map(({ c, what }) => `<a href="#case/${c.id}" class="req req--open" style="text-decoration:none;color:inherit"><b>${esc(c.applicant.name)} · ${c.id}</b><span class="small muted">${esc(what)}</span></a>`).join('')}</div>` : '<p class="empty">All on track.</p>'}</div></div>
@@ -739,7 +884,7 @@ function viewCases() {
   if (filter.status) list = list.filter((c) => c.status === filter.status);
   if (filter.bank) list = list.filter((c) => c.bankId === filter.bank);
   return `<div class="page-head"><div><h1>Cases</h1><p class="muted">${me().role === 'sales' ? 'Cases you created' : me().role === 'backend' ? 'Cases for your allocated banks' : 'All cases'}</p></div>${isRole('sales', 'manager', 'admin', 'superadmin') ? '<button class="btn btn--primary" data-act="newCase">+ New case</button>' : ''}</div>
-    <div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><label class="field" style="flex:2;min-width:200px">Search<input id="fq" value="${esc(filter.q)}" placeholder="Case number, name, mobile or PAN"></label><label class="field" style="flex:1;min-width:160px">Status<select id="fs"><option value="">All statuses</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${filter.status === k ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label><label class="field" style="flex:1;min-width:160px">Bank<select id="fb"><option value="">All banks</option>${BANKS.map((b) => `<option value="${b.id}" ${filter.bank === b.id ? 'selected' : ''}>${b.name}</option>`).join('')}</select></label></div>
+    <div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><label class="field" style="flex:2;min-width:200px">Search<input id="fq" value="${esc(filter.q)}" placeholder="Case number, name, mobile or PAN"></label><label class="field" style="flex:1;min-width:160px">Status<select id="fs"><option value="">All statuses</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${filter.status === k ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label><label class="field" style="flex:1;min-width:160px">Bank<select id="fb"><option value="">All banks</option>${banks().map((b) => `<option value="${b.id}" ${filter.bank === b.id ? 'selected' : ''}>${b.name}</option>`).join('')}</select></label></div>
     <div class="card card--flush">${caseTable(list)}</div>`;
 }
 
@@ -748,7 +893,7 @@ function viewQueue() {
   if (u.role === 'backend') {
     const q = queueCases();
     return `<div class="page-head"><div><h1>Processing queue</h1><p class="muted">Submitted cases for ${myBanks(u).map((b) => bank(b).name).join(', ')}. Oldest first. Pick a case to make it yours.</p></div></div>
-      <div class="card card--flush">${q.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Customer</th><th>Product</th><th>Bank</th><th>Amount</th><th>Waiting</th><th></th></tr></thead><tbody>${q.sort((a, b) => a.submittedAt - b.submittedAt).map((c) => `<tr><td><a href="#case/${c.id}"><b>${c.id}</b></a></td><td>${esc(c.applicant.name)}</td><td>${c.product}</td><td>${bank(c.bankId).name}</td><td class="num">${amt(c.amount)}</td><td><span class="chip ${hoursSince(c.submittedAt) > SLA_H.pickup ? 'chip--bad' : 'chip--info'}">${ago(c.submittedAt).replace(' ago', '')}</span></td><td><button class="btn btn--brand btn--sm" data-act="assignMe" data-case="${c.id}">Assign to me</button></td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Queue is empty. New cases for your banks appear here.</p>'}</div>`;
+      <div class="card card--flush">${q.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Customer</th><th>Product</th><th>Bank</th><th>Amount</th><th>Waiting</th><th></th></tr></thead><tbody>${q.sort((a, b) => a.submittedAt - b.submittedAt).map((c) => `<tr><td><a href="#case/${c.id}"><b>${c.id}</b></a></td><td>${esc(c.applicant.name)}</td><td>${c.product}</td><td>${bank(c.bankId).name}</td><td class="num">${amt(c.amount)}</td><td><span class="chip ${hoursSince(c.submittedAt) > slaH('pickup') ? 'chip--bad' : 'chip--info'}">${ago(c.submittedAt).replace(' ago', '')}</span></td><td><button class="btn btn--brand btn--sm" data-act="assignMe" data-case="${c.id}">Assign to me</button></td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Queue is empty. New cases for your banks appear here.</p>'}</div>`;
   }
   const waiting = S.cases.filter((c) => c.status === 'submitted');
   return `<div class="page-head"><div><h1>Processing queue</h1><p class="muted">Every submitted case not yet picked up. Unrouted cases have no available Backend Executive for their bank.</p></div></div>
@@ -766,7 +911,7 @@ function nextStep(c) {
   const be = user(c.assignee), owner = user(followUpOwner(c)), b = bank(c.bankId);
   switch (c.status) {
     case 'draft': return ['Sales Executive', 'Upload documents, check the details OCR read, add the bank and amount, then submit.'];
-    case 'submitted': return c.unrouted ? ['Manager', `No Backend Executive is available for ${b.name}. Assign one.`] : ['Backend Executive', `Waiting for an executive allocated to ${b.name} to pick it up (target ${SLA_H.pickup} hours).`];
+    case 'submitted': return c.unrouted ? ['Manager', `No Backend Executive is available for ${b.name}. Assign one.`] : ['Backend Executive', `Waiting for an executive allocated to ${b.name} to pick it up (target ${slaH('pickup')} hours).`];
     case 'processing': return [be?.name || 'Backend Executive', 'Verify each document, then mark eligible or request documents.'];
     case 'docs-pending': return [user(openReqs(c, 'docs')[0]?.owner)?.name || owner.name, 'Collect the requested documents from the customer and upload them on the request.'];
     case 'not-eligible': return c.eligibility?.confirmed ? ['Sales Executive', 'Closed as not eligible. Copy the file to another bank if suitable.'] : ['Manager', 'Confirm not eligible, or send the case back to processing.'];
@@ -800,10 +945,10 @@ function caseActions(c) {
 
 function draftEditor(c) {
   const a = c.applicant, canEdit = c.createdBy === S.me || isMgr();
-  const types = [...new Set([...(REQUIRED[c.product] || []), 'address', 'itr', 'photo'])];
+  const types = [...new Set([...requiredDocs(c.product, c.bankId), 'address', 'itr', 'photo'])];
   const docTile = (type) => {
     const ds = c.docs.filter((d) => d.type === type);
-    const req = (REQUIRED[c.product] || []).includes(type);
+    const req = requiredDocs(c.product, c.bankId).includes(type);
     if (!ds.length) return `<div class="doc doc--missing"><div class="doc__thumb"><span class="muted small">Not uploaded</span></div><div class="doc__name">${docLabel(type)} ${req ? '<span class="tag">required</span>' : ''}</div>${canEdit ? `<div class="doc__actions"><button class="btn btn--ghost btn--sm" data-act="pickFile" data-case="${c.id}" data-type="${type}">Upload file</button><button class="btn btn--ghost btn--sm" data-act="sample" data-case="${c.id}" data-type="${type}">Use sample</button></div>` : ''}</div>`;
     return ds.map((d) => `<div class="doc"><div class="doc__thumb ${d.scanning ? 'scanning' : ''}">${previews[d.id] ? `<img src="${previews[d.id]}" alt="">` : docMock(type)}</div><div class="doc__name">${docLabel(type)}</div><span class="tiny muted">${esc(d.name)} · ${d.scanning ? 'reading with OCR…' : ago(d.at)}</span></div>`).join('');
   };
@@ -819,13 +964,14 @@ function draftEditor(c) {
     <div class="card"><div class="card__head"><h2>2. Check customer details</h2><span class="small muted">Amber = please check</span></div><div class="form-grid">${OCR_FIELDS.map(fieldHtml).join('')}</div></div>
   </div>
   <div class="card"><div class="card__head"><h2>3. Loan details</h2></div><div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-    <label class="field">Product<select data-loan="product" data-case="${c.id}" ${canEdit ? '' : 'disabled'}>${PRODUCTS.map((p) => `<option ${p === c.product ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
-    <label class="field">Bank applied for<select data-loan="bankId" data-case="${c.id}" ${canEdit ? '' : 'disabled'}><option value="">Choose bank</option>${BANKS.map((b) => `<option value="${b.id}" ${b.id === c.bankId ? 'selected' : ''}>${b.name}</option>`).join('')}</select></label>
+    <label class="field">Product<select data-loan="product" data-case="${c.id}" ${canEdit ? '' : 'disabled'}>${productNames().map((p) => `<option ${p === c.product ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
+    <label class="field">Bank applied for<select data-loan="bankId" data-case="${c.id}" ${canEdit ? '' : 'disabled'}><option value="">Choose bank</option>${banksFor(c.product).map((b) => `<option value="${b.id}" ${b.id === c.bankId ? 'selected' : ''}>${b.name}</option>`).join('')}</select></label>
     <label class="field">Loan amount (₹)<input data-loan="amount" data-case="${c.id}" inputmode="numeric" value="${esc(c.amount)}" ${canEdit ? '' : 'disabled'}></label>
     <label class="field">Tenure (years)<input data-loan="tenure" data-case="${c.id}" inputmode="numeric" value="${esc(c.tenure)}" ${canEdit ? '' : 'disabled'}></label>
     <label class="field" style="grid-column:1/-1">Purpose<input data-loan="purpose" data-case="${c.id}" value="${esc(c.purpose)}" ${canEdit ? '' : 'disabled'}></label>
   </div>
-  <div class="note" style="margin-top:14px"><b>Document checklist for ${c.product}:</b><ul class="checklist" style="margin-top:8px">${(REQUIRED[c.product] || []).map((t) => `<li><span class="tick ${c.docs.some((d) => d.type === t) ? 'tick--yes' : 'tick--no'}">${c.docs.some((d) => d.type === t) ? '✓' : ''}</span>${docLabel(t)}</li>`).join('')}</ul></div>
+  ${(() => { const bp = bankProduct(c.bankId, c.product); if (!c.bankId) return `<div class="note note--info small" style="margin-top:14px">${banksFor(c.product).length} banks offer ${c.product}: ${banksFor(c.product).map((b) => b.name).join(', ')}.</div>`; if (!bp) return ''; const out = +c.amount && (+c.amount < bp.minAmount || +c.amount > bp.maxAmount); return `<div class="note ${out ? 'note--warn' : 'note--info'} small" style="margin-top:14px"><b>${esc(bp.scheme)}</b> · amount ${amt(bp.minAmount)} to ${amt(bp.maxAmount)} · tenure ${bp.minTenure} to ${bp.maxTenure} years · interest ${bp.roiFrom}% to ${bp.roiTo}% · fee ${esc(bp.processingFee)}${bp.minIncome ? ' · minimum income ' + inr(bp.minIncome) + ' a month' : ''}${bp.extraDocs.length ? ` · this bank also needs: ${bp.extraDocs.map(docLabel).join(', ')}` : ''}${out ? '<br><b>The amount is outside this bank\'s range.</b>' : ''}</div>`; })()}
+  <div class="note" style="margin-top:14px"><b>Document checklist for ${c.product}${c.bankId ? ' at ' + esc(bank(c.bankId).name) : ''}:</b><ul class="checklist" style="margin-top:8px">${requiredDocs(c.product, c.bankId).map((t) => `<li><span class="tick ${c.docs.some((d) => d.type === t) ? 'tick--yes' : 'tick--no'}">${c.docs.some((d) => d.type === t) ? '✓' : ''}</span>${docLabel(t)}</li>`).join('')}</ul></div>
   <div class="actions" style="margin-top:14px;justify-content:space-between;align-items:center"><span class="small muted">${miss.length ? `${miss.length} required document${miss.length > 1 ? 's' : ''} missing` : 'All required documents uploaded'} · saved automatically</span>${canEdit ? `<button class="btn btn--primary" data-act="submit" data-case="${c.id}">Submit case</button>` : ''}</div></div>`;
 }
 
@@ -833,7 +979,7 @@ function tabOverview(c) {
   const a = c.applicant;
   const row = (k, l) => `<dt>${l}</dt><dd>${esc(k === 'aadhaar' && a[k] ? 'XXXX XXXX ' + a[k] : ['netSalary', 'grossSalary', 'annualIncome', 'avgBalance'].includes(k) ? inr(a[k]) : k === 'dob' && a[k] ? day(Date.parse(a[k])) : a[k] || '—')}${c.ocr[k]?.source && c.ocr[k].source !== 'manual' ? ` <span class="tag">OCR</span>` : ''}</dd>`;
   return `<div class="grid2"><div class="card"><h3 style="margin-bottom:12px">Applicant</h3><dl class="kv">${OCR_FIELDS.map(([k, l]) => row(k, l)).join('')}</dl></div>
-    <div style="display:grid;gap:20px;align-content:start"><div class="card"><h3 style="margin-bottom:12px">Loan request</h3><dl class="kv"><dt>Product</dt><dd>${c.product}</dd><dt>Bank</dt><dd>${bank(c.bankId)?.name || '—'}</dd><dt>Amount</dt><dd>${amt(c.amount)}</dd><dt>Tenure</dt><dd>${c.tenure || '—'} years</dd><dt>Purpose</dt><dd>${esc(c.purpose || '—')}</dd>${c.override ? `<dt>Submitted with</dt><dd>missing items: ${esc(c.override)}</dd>` : ''}</dl></div>
+    <div style="display:grid;gap:20px;align-content:start"><div class="card"><h3 style="margin-bottom:12px">Loan request</h3><dl class="kv"><dt>Product</dt><dd>${c.product}</dd><dt>Bank</dt><dd>${bank(c.bankId)?.name || '—'}</dd><dt>Amount</dt><dd>${amt(c.amount)}</dd><dt>Tenure</dt><dd>${c.tenure || '—'} years</dd><dt>Purpose</dt><dd>${esc(c.purpose || '—')}</dd><dt>Lead source</dt><dd>${esc(c.source || '—')}${c.partnerId ? ' · ' + esc(M().partners.find((x) => x.id === c.partnerId)?.name || '') : ''}</dd>${c.override ? `<dt>Submitted with</dt><dd>missing items: ${esc(c.override)}</dd>` : ''}</dl></div>
     <div class="card"><h3 style="margin-bottom:12px">Processing</h3><dl class="kv"><dt>Eligibility</dt><dd>${c.eligibility ? (c.eligibility.value === 'eligible' ? 'Eligible' : 'Not eligible' + (c.eligibility.confirmed ? ' (confirmed)' : ' (awaiting manager)')) + (c.eligibility.reason ? ': ' + esc(c.eligibility.reason) : '') : '—'}</dd><dt>Final set uploaded</dt><dd>${c.finalSet ? 'Yes' : 'No'}</dd><dt>Follow-up owner</dt><dd>${user(followUpOwner(c)).name}${c.followUpOwner ? ' (set on this case)' : ' (default)'} ${(isMgr() || isAssignee(c)) && c.status !== 'draft' ? `<button class="btn btn--ghost btn--sm" data-act="followUpCase" data-case="${c.id}">Change</button>` : ''}</dd>${c.withdrawReason ? `<dt>Withdrawn</dt><dd>${esc(c.withdrawReason)}</dd>` : ''}</dl></div></div></div>`;
 }
 
@@ -896,22 +1042,17 @@ function viewCase(id) {
 }
 
 function viewAllocation() {
-  const execs = S.users.filter((u) => u.role === 'backend');
-  return `<div class="page-head"><div><h1>Bank allocation</h1><p class="muted">Each Backend Executive receives submitted cases only for their banks. One primary executive: auto-assigned. Several: shared queue. Backups see a case when no primary is available or it waits past ${SLA_H.pickup} hours. Changes apply to new cases.</p></div></div>
-    <div class="card card--flush alloc"><div class="table-wrap"><table class="tbl"><thead><tr><th>Backend Executive</th>${BANKS.map((b) => `<th>Bank ${b.no}<br><span style="text-transform:none;letter-spacing:0;font-weight:600">${b.name}</span></th>`).join('')}<th>On leave</th></tr></thead><tbody>${execs.map((u) => `<tr><td><b>${u.name}</b><div class="tiny muted">${u.label || ''}</div></td>${BANKS.map((b) => { const v = S.allocation[u.id]?.[b.id] || ''; return `<td class="${v ? 'on' : ''}"><select data-alloc="${u.id}|${b.id}" aria-label="${u.name} for ${b.name}"><option value="">—</option><option value="primary" ${v === 'primary' ? 'selected' : ''}>Primary</option><option value="backup" ${v === 'backup' ? 'selected' : ''}>Backup</option></select></td>`; }).join('')}<td><label class="switch"><input type="checkbox" data-leave="${u.id}" ${u.leave ? 'checked' : ''}> Leave</label></td></tr>`).join('')}</tbody></table></div></div>
-    <div class="card"><h3 style="margin-bottom:8px">Routing preview</h3><div class="table-wrap"><table class="tbl"><thead><tr><th>Bank</th><th>A new case goes to</th></tr></thead><tbody>${BANKS.map((b) => { const p = allocatedTo(b.id, 'primary').filter((u) => !u.leave), k = allocatedTo(b.id, 'backup').filter((u) => !u.leave); return `<tr><td>${b.name}</td><td>${p.length === 1 ? `Auto-assigned to <b>${p[0].name}</b>` : p.length > 1 ? `Shared queue: <b>${p.map((u) => u.name).join(', ')}</b>` : k.length ? `Backup queue: <b>${k.map((u) => u.name).join(', ')}</b>` : '<span class="chip chip--bad">Unrouted, Manager alerted</span>'}</td></tr>`; }).join('')}</tbody></table></div></div>`;
+  const execs = S.users.filter((u) => u.role === 'backend' && u.active !== false), ro = !canEditMaster('allocation') ? 'disabled' : '';
+  return `<div class="page-head"><div><h1>Bank allocation</h1><p class="muted">Each Backend Executive receives submitted cases only for their banks. One primary executive: auto-assigned. Several: shared queue. Backups see a case when no primary is available or it waits past ${slaH('pickup')} hours. Changes apply to new cases.</p>${ro ? '<span class="chip chip--plain chip--info">View only</span>' : ''}</div></div>
+    <div class="card card--flush alloc"><div class="table-wrap"><table class="tbl"><thead><tr><th>Backend Executive</th>${banks().map((b) => `<th>Bank ${b.no}<br><span style="text-transform:none;letter-spacing:0;font-weight:600">${b.name}</span></th>`).join('')}<th>On leave</th></tr></thead><tbody>${execs.map((u) => `<tr><td><b>${u.name}</b><div class="tiny muted">${u.label || ''}</div></td>${banks().map((b) => { const v = S.allocation[u.id]?.[b.id] || ''; return `<td class="${v ? 'on' : ''}"><select data-alloc="${u.id}|${b.id}" ${ro} aria-label="${u.name} for ${b.name}"><option value="">—</option><option value="primary" ${v === 'primary' ? 'selected' : ''}>Primary</option><option value="backup" ${v === 'backup' ? 'selected' : ''}>Backup</option></select></td>`; }).join('')}<td><label class="switch"><input type="checkbox" data-leave="${u.id}" ${u.leave ? 'checked' : ''} ${ro}> Leave</label></td></tr>`).join('')}</tbody></table></div></div>
+    <div class="card"><h3 style="margin-bottom:8px">Routing preview</h3><div class="table-wrap"><table class="tbl"><thead><tr><th>Bank</th><th>A new case goes to</th></tr></thead><tbody>${banks().map((b) => { const p = allocatedTo(b.id, 'primary').filter((u) => !u.leave), k = allocatedTo(b.id, 'backup').filter((u) => !u.leave); return `<tr><td>${b.name}</td><td>${p.length === 1 ? `Auto-assigned to <b>${p[0].name}</b>` : p.length > 1 ? `Shared queue: <b>${p.map((u) => u.name).join(', ')}</b>` : k.length ? `Backup queue: <b>${k.map((u) => u.name).join(', ')}</b>` : '<span class="chip chip--bad">Unrouted, Manager alerted</span>'}</td></tr>`; }).join('')}</tbody></table></div></div>`;
 }
 
 function viewTeam() {
-  const sales = S.users.filter((u) => u.role === 'sales'), be = S.users.filter((u) => u.role === 'backend');
+  const sales = S.users.filter((u) => u.role === 'sales' && u.active !== false);
   return `<div class="page-head"><div><h1>Team and follow-up</h1><p class="muted">Who chases the customer for missing documents and bank queries, per Sales Executive. Can be overridden on a single case or request.</p></div></div>
     <div class="card card--flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>Sales Executive</th><th>Follow-up arrangement</th><th>Open cases</th></tr></thead><tbody>${sales.map((u) => `<tr><td><div class="person">${avatar(u)}<b>${u.name}</b></div></td><td><select data-followup="${u.id}" style="padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface)"><option value="sales" ${u.followUp === 'sales' ? 'selected' : ''}>Sales Executive follows up</option><option value="backend" ${u.followUp === 'backend' ? 'selected' : ''}>Backend Executive follows up</option></select></td><td class="num">${S.cases.filter((c) => c.createdBy === u.id && OPEN.includes(c.status)).length}</td></tr>`).join('')}</tbody></table></div></div>
     <div class="card card--flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>Team member</th><th>Role</th><th>Banks</th><th>Status</th></tr></thead><tbody>${S.users.map((u) => `<tr><td><div class="person">${avatar(u)}<b>${u.name}</b></div></td><td>${ROLES[u.role]}${u.label ? ' · ' + u.label : ''}${u.title ? ' · ' + u.title : ''}</td><td class="small">${u.role === 'backend' ? myBanks(u).map((b) => bank(b).name + (S.allocation[u.id][b] === 'backup' ? ' (backup)' : '')).join(', ') : '—'}</td><td>${u.leave ? '<span class="chip chip--warn">On leave</span>' : '<span class="chip chip--good">Active</span>'}</td></tr>`).join('')}</tbody></table></div></div>`;
-}
-
-function viewBanks() {
-  return `<div class="page-head"><div><h1>Banks and SPOCs</h1><p class="muted">The SPOCs listed here are emailed automatically when a file is logged with their bank.</p></div></div>
-    <div class="grid2">${BANKS.map((b) => `<div class="card"><div class="card__head"><h2>Bank ${b.no} · ${b.name}</h2><button class="btn btn--ghost btn--sm" data-act="addSpoc" data-bank="${b.id}">+ Add SPOC</button></div>${b.spocs.map((s) => `<div class="person" style="padding:6px 0"><span class="avatar" style="background:var(--brand)">${s.name.split(' ').map((w) => w[0]).join('')}</span><div><b>${esc(s.name)}</b><div class="tiny muted" style="user-select:all">${esc(s.email)}</div><div class="tiny muted">${esc(s.product)}</div></div></div>`).join('')}<p class="small muted" style="margin-top:8px">Allocated: ${[...allocatedTo(b.id, 'primary').map((u) => u.name), ...allocatedTo(b.id, 'backup').map((u) => u.name + ' (backup)')].join(', ') || 'nobody'}</p></div>`).join('')}</div>`;
 }
 
 function viewEmails() {
@@ -923,6 +1064,146 @@ function viewAudit() {
   const rows = S.audit.filter((a) => !a.caseId || canSee(getCase(a.caseId) || { status: 'x' })).slice(0, 200);
   return `<div class="page-head"><div><h1>Audit log</h1><p class="muted">Every action, with who did it and when. Cannot be edited.</p></div></div>
     <div class="card card--flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>When</th><th>Who</th><th>Case</th><th>Action</th></tr></thead><tbody>${rows.map((a) => `<tr><td class="small">${dt(a.at)}</td><td>${a.by === 'system' ? 'CRM' : esc(user(a.by)?.name || '')}</td><td>${a.caseId ? `<a href="#case/${a.caseId}">${a.caseId}</a>` : '—'}</td><td>${esc(a.text)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* =================== MASTERS: access + generic screens =================== */
+function masterLevel(key, u = me()) {
+  if (u.role === 'superadmin') return 'edit';
+  return S.masterAccess[key]?.[u.role] || 'none';
+}
+const canViewMaster = (key) => masterLevel(key) !== 'none';
+const canEditMaster = (key) => masterLevel(key) === 'edit';
+const mrecs = (key) => (key === 'users' ? S.users : key === 'settings' ? [M().settings] : M()[key]);
+function refOptions(ref) {
+  if (ref === 'users') return S.users.filter((u) => u.active !== false).map((u) => [u.id, `${u.name} · ${ROLES[u.role]}`]);
+  if (ref === 'banks') return M().banks.map((b) => [b.id, b.name + (b.active ? '' : ' (inactive)')]);
+  if (ref === 'products') return M().products.map((p) => [p.id, p.name + (p.active ? '' : ' (inactive)')]);
+  if (ref === 'docTypes') return M().docTypes.map((d) => [d.id, d.name + (d.active ? '' : ' (inactive)')]);
+  return [];
+}
+const refLabel = (ref, id) => (refOptions(ref).find(([v]) => v === id)?.[1] || '').replace(/ · .*$/, '').replace(' (inactive)', '') || '—';
+const optPairs = (f) => (f.opts ? f.opts().map((o) => (Array.isArray(o) ? o : [o, o])) : refOptions(f.ref));
+function cellValue(f, v) {
+  if (f.t === 'bool') return f.k === 'active' ? (v === false ? '<span class="chip">Inactive</span>' : '<span class="chip chip--good">Active</span>') : v ? 'Yes' : 'No';
+  if (f.t === 'ref') return esc(refLabel(f.ref, v));
+  if (f.t === 'multi') { const arr = v || []; if (!arr.length) return f.k === 'products' ? '<span class="muted">All products</span>' : '<span class="muted">—</span>'; const labels = arr.map((x) => (f.ref ? refLabel(f.ref, x) : x)); return esc(labels.slice(0, 3).join(', ') + (labels.length > 3 ? ` +${labels.length - 3}` : '')); }
+  if (f.t === 'select') return esc(optPairs(f).find(([o]) => o === v)?.[1] || v || '—');
+  if (f.t === 'date') return v ? day(Date.parse(v)) : '—';
+  if (f.t === 'number') { if (v === '' || v == null) return '—'; if (/amount/i.test(f.k)) return amt(v); if (f.k === 'payout' || /^roi/.test(f.k)) return `${v}%`; return esc(v); }
+  return esc(v ?? '—');
+}
+function fieldInput(f, rec, ro) {
+  const v = rec[f.k], id = 'mf-' + f.k, dis = ro || (f.lock && rec.id) ? 'disabled' : '';
+  const wide = ['textarea', 'multi'].includes(f.t) ? 'full' : '';
+  switch (f.t) {
+    case 'textarea': return `<label class="field full">${f.l}<textarea id="${id}" name="${f.k}" rows="${f.k === 'body' ? 10 : 3}" ${dis}>${esc(v ?? '')}</textarea></label>`;
+    case 'bool': return `<label class="switch ${wide}" style="grid-column:1/-1"><input type="checkbox" name="${f.k}" ${v === false || (v == null && f.k !== 'active') ? '' : 'checked'} ${dis}> ${f.l}</label>`;
+    case 'select': case 'ref': return `<label class="field">${f.l}<select id="${id}" name="${f.k}" ${dis}>${f.req ? '' : '<option value="">—</option>'}${optPairs(f).map(([o, l]) => `<option value="${esc(o)}" ${o === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`;
+    case 'multi': return `<div class="field full">${f.l}<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;font-weight:500">${optPairs(f).map(([o, l]) => `<label class="switch"><input type="checkbox" name="${f.k}" value="${esc(o)}" ${(v || []).includes(o) ? 'checked' : ''} ${dis}> ${esc(l)}</label>`).join('')}</div></div>`;
+    default: return `<label class="field">${f.l}<input id="${id}" name="${f.k}" type="${f.t === 'number' ? 'number' : f.t === 'email' ? 'email' : f.t === 'date' ? 'date' : 'text'}" ${f.t === 'number' ? 'step="any"' : ''} value="${esc(v ?? '')}" ${dis}></label>`;
+  }
+}
+function readForm(def, f, rec) {
+  const out = {};
+  def.fields.forEach((fd) => {
+    if (fd.lock && rec.id) return;
+    if (fd.t === 'bool') out[fd.k] = f[fd.k] === 'on';
+    else if (fd.t === 'multi') out[fd.k] = f._all(fd.k);
+    else if (fd.t === 'number') out[fd.k] = f[fd.k] === '' || f[fd.k] == null ? '' : +f[fd.k];
+    else out[fd.k] = (f[fd.k] ?? '').trim();
+  });
+  return out;
+}
+function validate(def, data, rec) {
+  for (const fd of def.fields) {
+    const v = data[fd.k] ?? rec[fd.k];
+    if (fd.req && (v === '' || v == null)) return `${fd.l} is required.`;
+    if (fd.t === 'email' && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return `${fd.l} is not a valid email.`;
+    if (fd.t === 'number' && v !== '' && v != null && (isNaN(v) || v < 0)) return `${fd.l} must be a positive number.`;
+    if (fd.unique && v && mrecs(def.key).some((x) => x !== rec && String(x[fd.k]).toLowerCase() === String(v).toLowerCase())) return `Another record already has this ${fd.l.toLowerCase()}.`;
+  }
+  if (def.unique && mrecs(def.key).some((x) => x !== rec && def.unique.every((k) => x[k] === (data[k] ?? rec[k])))) return 'This combination already exists. Edit the existing entry instead.';
+  if (def.key === 'bankProducts') { const d = { ...rec, ...data }; if (+d.minAmount > +d.maxAmount) return 'Minimum amount is above the maximum.'; if (+d.roiFrom > +d.roiTo) return 'Interest from is above interest up to.'; }
+  if (def.key === 'users') { const d = { ...rec, ...data }; if (rec.id === S.me && d.active === false) return 'You cannot deactivate your own account.'; if (rec.id === S.me && d.role !== 'superadmin' && me().role === 'superadmin') return 'You cannot remove your own Super Admin role.'; }
+  return null;
+}
+function usage(key, rec) {
+  const n = [];
+  if (key === 'banks') { n.push(...S.cases.filter((c) => c.bankId === rec.id).map(() => 'case')); n.push(...M().bankProducts.filter((x) => x.bankId === rec.id).map(() => 'product')); }
+  if (key === 'products') { n.push(...S.cases.filter((c) => c.product === rec.name)); n.push(...M().bankProducts.filter((x) => x.productId === rec.id)); }
+  if (key === 'docTypes') { n.push(...S.cases.flatMap((c) => c.docs).filter((d) => d.type === rec.id)); n.push(...M().products.filter((p) => p.requiredDocs.includes(rec.id))); }
+  if (key === 'users') { n.push(...S.cases.filter((c) => c.createdBy === rec.id || c.assignee === rec.id)); }
+  if (key === 'partners') n.push(...S.cases.filter((c) => c.partnerId === rec.id));
+  return n.length;
+}
+function recTitle(def, rec) { return def.key === 'bankProducts' ? `${refLabel('banks', rec.bankId)} · ${refLabel('products', rec.productId)}` : def.key === 'spocs' ? `${rec.name} (${refLabel('banks', rec.bankId)})` : rec.name || rec.date || rec.id; }
+function openRecord(key, id) {
+  const def = MASTER[key], isNew = !id, ro = !canEditMaster(key);
+  const rec = isNew ? (key === 'users' ? { active: true, role: 'sales', followUp: 'sales' } : { active: true }) : mrecs(key).find((x) => x.id === id);
+  const used = isNew ? 0 : usage(key, rec);
+  modal({
+    title: isNew ? `Add to ${def.label.toLowerCase()}` : `${ro ? '' : 'Edit: '}${esc(recTitle(def, rec))}`, wide: true, submit: ro ? '' : isNew ? 'Add' : 'Save changes',
+    body: `${ro ? '<div class="note note--info small">You can view this master but not change it. Ask the Super Admin for edit access.</div>' : ''}<div class="form-grid">${def.fields.map((f) => fieldInput(f, rec, ro)).join('')}</div>
+      ${!isNew && !ro && me().role === 'superadmin' ? `<div class="note small" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><span>${used ? `Used by ${used} record${used > 1 ? 's' : ''}. Deactivate it instead of deleting.` : 'Not used anywhere yet. It can be deleted.'}</span>${used ? '' : `<button type="button" class="btn btn--danger btn--sm" data-act="delRecord" data-key="${key}" data-id="${rec.id}">Delete</button>`}</div>` : ''}`,
+    onSubmit(f) {
+      const data = readForm(def, f, rec);
+      const err = validate(def, data, rec); if (err) return err;
+      if (isNew) {
+        const nid = key === 'docTypes' ? data.code.toLowerCase().replace(/[^a-z0-9]+/g, '-') : key === 'users' ? 'u' + (S.users.length + 1) + Math.random().toString(36).slice(2, 4) : key.slice(0, 2) + Math.random().toString(36).slice(2, 7);
+        const obj = { id: nid, ...data };
+        if (key === 'users') { obj.color = ['#0891b2', '#9333ea', '#ca8a04', '#be123c', '#047857'][S.users.length % 5]; obj.leave = false; }
+        mrecs(key).push(obj);
+        log(null, `${def.label}: added ${recTitle(def, obj)}`);
+      } else {
+        const changes = Object.keys(data).filter((k) => JSON.stringify(data[k] ?? '') !== JSON.stringify(rec[k] ?? '')).map((k) => { const fd = def.fields.find((x) => x.k === k); return `${fd.l}: ${String(cellValue(fd, rec[k])).replace(/<[^>]+>/g, '')} → ${String(cellValue(fd, data[k])).replace(/<[^>]+>/g, '')}`; });
+        if (key === 'products' && data.name && data.name !== rec.name) S.cases.forEach((c) => { if (c.product === rec.name) c.product = data.name; });
+        Object.assign(rec, data);
+        log(null, `${def.label}: updated ${recTitle(def, rec)}${changes.length ? ' (' + changes.join('; ') + ')' : ' (no changes)'}`);
+      }
+      toast(isNew ? 'Added' : 'Saved');
+    },
+  });
+}
+ACT.openRecord = (ds) => openRecord(ds.key, ds.id);
+ACT.addRecord = (ds) => openRecord(ds.key, null);
+ACT.delRecord = (ds) => { const def = MASTER[ds.key], list = mrecs(ds.key), rec = list.find((x) => x.id === ds.id); list.splice(list.indexOf(rec), 1); log(null, `${def.label}: deleted ${recTitle(def, rec)}`); $('#overlayRoot').innerHTML = ''; save(); render(); toast('Deleted'); };
+ACT.saveSettings = () => {
+  const def = MASTER.settings, form = $('#settingsForm'), fd = new FormData(form);
+  const f = Object.fromEntries(fd.entries()); f._all = (n) => fd.getAll(n);
+  const rec = M().settings, data = readForm(def, f, rec), err = validate(def, data, rec);
+  if (err) { toast(err); return; }
+  const changes = Object.keys(data).filter((k) => JSON.stringify(data[k]) !== JSON.stringify(rec[k])).map((k) => `${def.fields.find((x) => x.k === k).l}: ${rec[k]} → ${data[k]}`);
+  Object.assign(rec, data); log(null, `System settings updated${changes.length ? ': ' + changes.join('; ') : ''}`); save(); render(); toast('Settings saved');
+};
+
+let mfilter = '';
+function viewMasters() {
+  const visible = MASTERS.filter((m) => canViewMaster(m.key));
+  return `<div class="page-head"><div><h1>Masters</h1><p class="muted">Reference data the whole CRM runs on. <span class="chip chip--plain chip--bad">Critical</span> masters are edited by the Super Admin; others can be delegated to Admins.</p></div>${me().role === 'superadmin' ? '<a class="btn btn--brand" href="#access">Master access</a>' : ''}</div>
+    ${MGROUPS.map((g) => { const ms = visible.filter((m) => m.group === g); return ms.length ? `<div style="display:grid;gap:12px"><h2>${g}</h2><div class="grid3">${ms.map((m) => { const lvl = masterLevel(m.key), count = m.link ? '' : m.single ? '' : mrecs(m.key).length; return `<a class="card" href="${m.link || '#master/' + m.key}" style="text-decoration:none;color:inherit;display:grid;gap:8px;align-content:start"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>${m.label}</h3>${count !== '' ? `<span class="tag">${count}</span>` : ''}</div><p class="small muted">${m.desc}</p><div style="display:flex;gap:6px;flex-wrap:wrap">${m.critical ? '<span class="chip chip--plain chip--bad">Critical</span>' : ''}<span class="chip chip--plain ${lvl === 'edit' ? 'chip--good' : 'chip--info'}">${lvl === 'edit' ? 'You can edit' : 'View only'}</span></div></a>`; }).join('')}</div></div>` : ''; }).join('')}`;
+}
+function viewMaster(key) {
+  const def = MASTER[key];
+  if (!def || def.link) return '<div class="card"><p class="empty">Master not found.</p></div>';
+  if (!canViewMaster(key)) return `<div class="card"><p class="empty">${ROLES[me().role]} cannot open the ${def.label} master. The Super Admin controls this on Master access.</p></div>`;
+  const edit = canEditMaster(key);
+  const head = `<a href="#masters" class="small">← Masters</a><div class="page-head"><div><h1>${def.label}</h1><p class="muted">${def.desc}</p><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${def.critical ? '<span class="chip chip--plain chip--bad">Critical · Super Admin controls</span>' : '<span class="chip chip--plain">Non-critical</span>'}<span class="chip chip--plain ${edit ? 'chip--good' : 'chip--info'}">${edit ? 'You can edit' : 'View only'}</span></div></div>${edit && !def.single && !def.noAdd ? `<button class="btn btn--primary" data-act="addRecord" data-key="${key}">+ Add</button>` : ''}</div>`;
+  if (def.single) {
+    return `${head}<form class="card" id="settingsForm" onsubmit="return false"><div class="form-grid">${def.fields.map((f) => fieldInput(f, M().settings, !edit)).join('')}</div>${edit ? '<div class="actions" style="margin-top:16px;justify-content:flex-end"><button type="button" class="btn btn--primary" data-act="saveSettings">Save settings</button></div>' : ''}</form>`;
+  }
+  let rows = mrecs(key);
+  if (mfilter) { const q = mfilter.toLowerCase(); rows = rows.filter((r) => def.cols.some((k) => String(cellValue(def.fields.find((f) => f.k === k), r[k])).toLowerCase().includes(q))); }
+  const colDefs = def.cols.map((k) => def.fields.find((f) => f.k === k));
+  return `${head}<div class="card" style="padding:12px 16px"><label class="field">Search<input id="mq" value="${esc(mfilter)}" placeholder="Search ${def.label.toLowerCase()}"></label></div>
+    <div class="card card--flush">${rows.length ? `<div class="table-wrap"><table class="tbl"><thead><tr>${colDefs.map((f) => `<th>${f.l.replace(/ \(.*\)$/, '')}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr class="link" data-act="openRecord" data-key="${key}" data-id="${r.id}" style="${r.active === false ? 'opacity:.6' : ''}">${colDefs.map((f) => `<td>${cellValue(f, r[f.k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '<p class="empty">Nothing matches.</p>'}</div>
+    <p class="tiny muted">${edit ? 'Click a row to edit. Records in use cannot be deleted; deactivate them instead. Every change is recorded in the audit log.' : 'Click a row to view details.'}</p>`;
+}
+function viewAccess() {
+  if (me().role !== 'superadmin') return '<div class="card"><p class="empty">Only the Super Admin can change master access.</p></div>';
+  const sel = (key, role) => { const v = S.masterAccess[key][role]; return `<select data-access="${key}|${role}" style="padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface)">${[['none', 'No access'], ['view', 'View'], ['edit', 'Edit']].map(([o, l]) => `<option value="${o}" ${v === o ? 'selected' : ''}>${l}</option>`).join('')}</select>${MASTER[key].critical && role === 'admin' && v === 'edit' ? ' <span class="chip chip--warn">critical delegated</span>' : ''}`; };
+  return `<a href="#masters" class="small">← Masters</a><div class="page-head"><div><h1>Master access</h1><p class="muted">Decide who can view or change each master. The Super Admin can always edit every master. Sales and Backend Executives never open masters; they only use the values in their screens.</p></div></div>
+    <div class="card card--flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>Master</th><th>Type</th><th>Super Admin</th><th>Admin</th><th>Manager</th></tr></thead><tbody>${MGROUPS.map((g) => `<tr><td colspan="5" style="background:var(--surface-2);font-weight:700">${g}</td></tr>${MASTERS.filter((m) => m.group === g).map((m) => `<tr><td><b>${m.label}</b><div class="tiny muted">${m.desc}</div></td><td>${m.critical ? '<span class="chip chip--plain chip--bad">Critical</span>' : '<span class="chip chip--plain">Non-critical</span>'}</td><td><span class="chip chip--plain chip--good">Edit (always)</span></td><td>${sel(m.key, 'admin')}</td><td>${sel(m.key, 'manager')}</td></tr>`).join('')}`).join('')}</tbody></table></div></div>
+    <div class="note small">Critical masters change money, security or who can do what: users, referral partners and their payout, banks, loan products, bank products and payouts, system settings. By default Admins can only view them.</div>`;
 }
 
 /* =================== NOTIFICATIONS DRAWER =================== */
@@ -939,14 +1220,16 @@ function render() {
   const allowed = NAV.find((n) => n[0] === route)?.[2];
   let html;
   if (route === 'case') html = viewCase(arg);
+  else if (route === 'master') html = viewMaster(arg);
   else if (allowed && !allowed.includes(me().role)) html = `<div class="card"><p class="empty">${ROLES[me().role]} cannot open this page.</p></div>`;
-  else html = ({ dashboard: viewDashboard, cases: viewCases, queue: viewQueue, tasks: viewTasks, allocation: viewAllocation, team: viewTeam, banks: viewBanks, emails: viewEmails, audit: viewAudit }[route] || viewDashboard)();
+  else html = ({ dashboard: viewDashboard, cases: viewCases, queue: viewQueue, tasks: viewTasks, allocation: viewAllocation, team: viewTeam, masters: viewMasters, access: viewAccess, emails: viewEmails, audit: viewAudit }[route] || viewDashboard)();
   $('#view').innerHTML = html;
   renderSide();
-  $('#viewAs').innerHTML = S.users.map((u) => `<option value="${u.id}" ${u.id === S.me ? 'selected' : ''}>${u.name} · ${ROLES[u.role]}${u.label ? ' (' + u.label + ')' : ''}</option>`).join('');
+  $('#viewAs').innerHTML = S.users.filter((u) => u.active !== false || u.id === S.me).map((u) => `<option value="${u.id}" ${u.id === S.me ? 'selected' : ''}>${u.name} · ${ROLES[u.role]}${u.label ? ' (' + u.label + ')' : ''}</option>`).join('');
   const unread = S.notifications.filter((n) => n.userId === S.me && !n.read).length;
   $('#bellDot').hidden = !unread; $('#bellDot').textContent = unread;
   const fq = $('#fq'); if (fq) { fq.addEventListener('input', () => { filter.q = fq.value; const pos = fq.selectionStart; render(); const n = $('#fq'); n.focus(); n.setSelectionRange(pos, pos); }); }
+  const mq = $('#mq'); if (mq) { mq.addEventListener('input', () => { mfilter = mq.value; const pos = mq.selectionStart; render(); const n = $('#mq'); n.focus(); n.setSelectionRange(pos, pos); }); }
   $('#fs')?.addEventListener('change', (e) => { filter.status = e.target.value; render(); });
   $('#fb')?.addEventListener('change', (e) => { filter.bank = e.target.value; render(); });
 }
@@ -964,12 +1247,13 @@ document.addEventListener('change', (e) => {
   const t = e.target;
   if (t.id === 'viewAs') { S.me = t.value; caseTab = 'overview'; save(); render(); toast(`Now viewing as ${me().name}, ${ROLES[me().role]}`); return; }
   if (t.dataset.field && t.dataset.case) { const c = getCase(t.dataset.case), k = t.dataset.field; const v = t.value.trim(); if (k === 'pan' && v && !/^[A-Za-z]{5}\d{4}[A-Za-z]$/.test(v)) toast('PAN should look like ABCDE1234F'); c.applicant[k] = k === 'pan' ? v.toUpperCase() : v; c.ocr[k] = { ...(c.ocr[k] || { values: [] }), source: 'manual' }; log(c, `Corrected ${OCR_FIELDS.find((f) => f[0] === k)[1]}`); save(); render(); return; }
-  if (t.dataset.loan && t.dataset.case) { const c = getCase(t.dataset.case), k = t.dataset.loan; c[k] = ['amount', 'tenure'].includes(k) ? +t.value.replace(/[^\d.]/g, '') || '' : t.value; save(); render(); return; }
-  if (t.dataset.alloc) { const [uid, bid] = t.dataset.alloc.split('|'); S.allocation[uid] = S.allocation[uid] || {}; if (t.value) S.allocation[uid][bid] = t.value; else delete S.allocation[uid][bid]; log(null, `${user(uid).name} set to ${t.value || 'none'} for ${bank(bid).name}`); save(); render(); toast('Allocation saved; applies to new cases'); return; }
+  if (t.dataset.loan && t.dataset.case) { const c = getCase(t.dataset.case), k = t.dataset.loan; c[k] = ['amount', 'tenure'].includes(k) ? +t.value.replace(/[^\d.]/g, '') || '' : t.value; if (k === 'product' && c.bankId && !bankProduct(c.bankId, c.product)) { c.bankId = ''; toast('That bank does not offer this product. Choose a bank again.'); } save(); render(); return; }
+  if (t.dataset.access) { const [key, role] = t.dataset.access.split('|'); S.masterAccess[key][role] = t.value; log(null, `Master access: ${ROLES[role]} set to ${t.value} for ${MASTER[key].label}`); save(); render(); toast('Access updated'); return; }
+  if (t.dataset.alloc) { if (!canEditMaster('allocation')) return; const [uid, bid] = t.dataset.alloc.split('|'); S.allocation[uid] = S.allocation[uid] || {}; if (t.value) S.allocation[uid][bid] = t.value; else delete S.allocation[uid][bid]; log(null, `${user(uid).name} set to ${t.value || 'none'} for ${bank(bid).name}`); save(); render(); toast('Allocation saved; applies to new cases'); return; }
   if (t.dataset.leave) { const u = user(t.dataset.leave); u.leave = t.checked; log(null, `${u.name} marked ${u.leave ? 'on leave' : 'back from leave'}`); save(); render(); return; }
   if (t.dataset.followup) { const u = user(t.dataset.followup); u.followUp = t.value; log(null, `${u.name}'s follow-up arrangement: ${t.value === 'sales' ? 'Sales Executive follows up' : 'Backend Executive follows up'}`); save(); render(); toast('Follow-up arrangement saved'); }
 });
 $('#bell').addEventListener('click', () => ($('.drawer') ? closeDrawer() : openDrawer()));
-addEventListener('hashchange', () => { if (!location.hash.startsWith('#case/')) caseTab = 'overview'; closeDrawer(); render(); window.scrollTo(0, 0); });
+addEventListener('hashchange', () => { mfilter = ''; if (!location.hash.startsWith('#case/')) caseTab = 'overview'; closeDrawer(); render(); window.scrollTo(0, 0); });
 render();
 </script>
