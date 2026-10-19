@@ -1,0 +1,5 @@
+# Used when the repository is connected to Netlify with Base directory = uat.
+# The site is plain static files: there is nothing to build on Netlify.
+[build]
+  publish = "."
+  command = "echo 'Static UAT site, no build step'"

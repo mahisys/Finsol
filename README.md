@@ -182,3 +182,31 @@ tests/e2e/           browser tests (Playwright; need a seeded DB and a running d
   client's real details before launch, and add a real privacy policy. The enquiry form stores personal data.
 * The public enquiry endpoint validates input, whitelists fields, uses a honeypot field against bots, and limits each IP
   to 5 submissions per 10 minutes.
+
+---
+
+## UAT trial site (Netlify)
+
+The two clickable prototypes (`prototype/index.html` website, `prototype/crm.html` CRM) are packaged as a
+static site in `uat/` for user-acceptance testing:
+
+| URL | What |
+| --- | --- |
+| `/` | Public website |
+| `/crm/` | CRM (use "Viewing as" at the top to test each role) |
+
+Rebuild after changing a prototype: `npm run build:uat` (no dependencies needed), then commit `uat/`.
+
+**Deploy, option 1 (fastest):** open <https://app.netlify.com/drop> and drag the `uat` folder (or a zip of its
+contents) onto the page. Netlify gives you a `*.netlify.app` link in a few seconds. To update later, open the site in
+Netlify → Deploys → drag the new folder onto the deploy area.
+
+**Deploy, option 2 (auto-deploy from GitHub):** Netlify → Add new site → Import an existing project → pick this
+repository → set **Base directory** to `uat`, leave the build command empty, **Publish directory** `uat`
+(Netlify shows it as `uat/`). Every push to the branch redeploys.
+
+Notes for testers:
+- All data is sample data and is saved only in the tester's own browser (local storage). Each tester has their
+  own copy; "Reset demo data" in the CRM restores the samples. Nothing is emailed or uploaded anywhere.
+- The site sends `noindex` headers and a blocking `robots.txt`, so it stays out of search engines.
+- Anyone with the link can open it. Netlify's password protection needs a paid plan; share the link only with testers.

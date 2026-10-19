@@ -19,7 +19,8 @@
     "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/run.ts",
     "typecheck": "tsc --noEmit",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
-    "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create"
+    "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "build:uat": "node scripts/build-uat.mjs"
   },
   "dependencies": {
     "@payloadcms/db-sqlite": "3.90.2",
