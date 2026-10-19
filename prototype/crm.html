@@ -304,7 +304,7 @@ function seedMasters() {
       { id: 'h2', date: '2027-01-26', name: 'Republic Day', active: true },
       { id: 'h3', date: '2027-05-01', name: 'Maharashtra Day', active: true },
     ],
-    settings: { id: 'settings', casePrefix: 'FS', ocrProvider: 'Not chosen yet', retentionDays: 1825, sessionMinutes: 30, passwordMin: 10, adminOtp: true },
+    settings: { id: 'settings', casePrefix: 'FS', ocrProvider: 'Not chosen yet', retentionDays: 1825, sessionMinutes: 30, passwordMin: 10, adminOtp: true, gstRate: 18, invoicePrefix: 'FS/INV' },
   };
 }
 
@@ -359,7 +359,7 @@ const MASTERS = [
   { key: 'settings', label: 'System settings', group: 'System', critical: true, single: true, desc: 'Case numbering, OCR provider, data retention and login security.',
     fields: [{ k: 'casePrefix', l: 'Case number prefix', t: 'text', req: true }, { k: 'ocrProvider', l: 'OCR provider', t: 'select', opts: () => ['Not chosen yet', 'Google Document AI', 'AWS Textract', 'India KYC OCR provider'] },
       { k: 'retentionDays', l: 'Keep closed-case documents for (days)', t: 'number', req: true }, { k: 'sessionMinutes', l: 'Log out after inactivity (minutes)', t: 'number', req: true },
-      { k: 'passwordMin', l: 'Minimum password length', t: 'number', req: true }, { k: 'adminOtp', l: 'One-time password for Admin and Super Admin logins', t: 'bool' }] },
+      { k: 'passwordMin', l: 'Minimum password length', t: 'number', req: true }, { k: 'adminOtp', l: 'One-time password for Admin and Super Admin logins', t: 'bool' }, { k: 'gstRate', l: 'GST on commission invoices (%)', t: 'number', req: true }, { k: 'invoicePrefix', l: 'Invoice number prefix', t: 'text', req: true }] },
 ];
 const MASTER = Object.fromEntries(MASTERS.map((m) => [m.key, m]));
 const MGROUPS = ['People', 'Banks and products', 'Documents and workflow', 'System'];
@@ -395,7 +395,7 @@ const OCR_SAMPLE = {
 };
 
 /* =================== STATE =================== */
-const KEY = 'finsol-crm-prototype-v2';
+const KEY = 'finsol-crm-prototype-v3';
 const H = 3600e3, D = 24 * H;
 const now = () => Date.now();
 let S;
@@ -429,9 +429,12 @@ function seed() {
     base('FS-2026-00109', { status: 'disbursed', createdBy: 'u5', createdAt: t - 30 * D, submittedAt: t - 30 * D, pickedAt: t - 29 * D, assignee: 'u6', product: 'Home Loan', bankId: 'b4', amount: 5200000, tenure: 25, applicant: app('Arjun Mehta', '9811100109', 'JKLPM7712E', 'Zenith Finserv', 160000), docs: docsFor('Home Loan', 'u5', t - 30 * D), eligibility: { value: 'eligible', reason: '', at: t - 28 * D }, finalSet: true, bank: { ref: 'UHF-HL-44102', loginDate: t - 27 * D, branch: 'Baner', spocAt: t - 27 * D }, decision: { type: 'sanctioned', amount: 5200000, rate: 8.4, tenure: 25, fee: '0.25%', date: t - 12 * D, conditions: '' }, disbursal: { amount: 5200000, date: t - 4 * D, lan: 'UHF00451189', mode: 'Full' } }),
     base('FS-2026-00110', { status: 'rejected', createdBy: 'u4', createdAt: t - 20 * D, submittedAt: t - 20 * D, pickedAt: t - 19 * D, assignee: 'u7', product: 'Business Loan', bankId: 'b5', amount: 1500000, tenure: 3, applicant: app('Farhan Ali', '9811100110', 'KLMPA1182F', 'Ali Electricals', '', { employmentType: 'Business owner' }), docs: docsFor('Business Loan', 'u4', t - 20 * D), eligibility: { value: 'eligible', reason: '', at: t - 18 * D }, finalSet: true, bank: { ref: 'KSFB-BL-66001', loginDate: t - 16 * D, branch: 'Hadapsar', spocAt: t - 16 * D }, decision: { type: 'rejected', reason: 'Business vintage under the bank\'s 3-year requirement.', date: t - 6 * D } }),
     base('FS-2026-00111', { status: 'not-eligible', createdBy: 'u5', createdAt: t - 2 * D, submittedAt: t - 2 * D, pickedAt: t - 1 * D, assignee: 'u7', product: 'Personal Loan', bankId: 'b1', amount: 1200000, applicant: app('Pooja Nair', '9811100111', 'LMNPN4471G', 'City Retail', 38000), docs: docsFor('Personal Loan', 'u5', t - 2 * D), eligibility: { value: 'not-eligible', reason: 'Existing monthly instalments take 62% of salary; bank allows 50%.', at: t - 4 * H, confirmed: false } }),
+    base('FS-2026-00095', { status: 'disbursed', createdBy: 'u4', createdAt: t - 75 * D, submittedAt: t - 75 * D, pickedAt: t - 74 * D, assignee: 'u7', product: 'Personal Loan', bankId: 'b1', amount: 900000, applicant: app('Deepa Menon', '9811100095', 'MNOPM2231H', 'Lotus Hospitals', 88000), docs: docsFor('Personal Loan', 'u4', t - 75 * D), eligibility: { value: 'eligible', reason: '', at: t - 73 * D }, finalSet: true, bank: { ref: 'BNB/PL/2026/40177', loginDate: t - 72 * D, branch: 'Aundh', spocAt: t - 72 * D }, decision: { type: 'sanctioned', amount: 900000, rate: 10.9, tenure: 5, fee: '1.5%', date: t - 68 * D, conditions: '' }, disbursal: { amount: 900000, date: t - 65 * D, lan: 'BNB7712045', mode: 'Full' } }),
+    base('FS-2026-00098', { status: 'disbursed', createdBy: 'u5', createdAt: t - 28 * D, submittedAt: t - 28 * D, pickedAt: t - 27 * D, assignee: 'u6', product: 'Loan Against Property', bankId: 'b2', amount: 7500000, tenure: 15, applicant: app('Vivek Joshi', '9811100098', 'NOPPJ8812K', 'Joshi Engineering Works', '', { employmentType: 'Business owner', annualIncome: 5200000 }), docs: docsFor('Loan Against Property', 'u5', t - 28 * D), eligibility: { value: 'eligible', reason: '', at: t - 26 * D }, finalSet: true, bank: { ref: 'MCB/LAP/55102', loginDate: t - 24 * D, branch: 'Kothrud', spocAt: t - 24 * D }, decision: { type: 'sanctioned', amount: 7500000, rate: 9.6, tenure: 15, fee: '0.75%', date: t - 12 * D, conditions: '' }, disbursal: { amount: 7500000, date: t - 6 * D, lan: 'MCB4410982', mode: 'Full' } }),
   ];
   cases.forEach((c, i) => {
     c.source = ['Website enquiry', 'Walk-in', 'Referral partner', 'Phone call'][i % 4]; if (c.source === 'Referral partner') c.partnerId = 'p1';
+    if (c.id === 'FS-2026-00098') { c.source = 'Referral partner'; c.partnerId = 'p2'; } if (c.id === 'FS-2026-00095') { c.source = 'Referral partner'; c.partnerId = 'p1'; } if (c.id === 'FS-2026-00109') { c.source = 'Website enquiry'; c.partnerId = null; }
     if (c.status === 'draft') return;
     const p = masters.products.find((x) => x.name === c.product), bp = masters.bankProducts.find((x) => x.bankId === c.bankId && x.productId === p.id);
     (bp?.extraDocs || []).forEach((t) => { if (!c.docs.some((d) => d.type === t)) c.docs.push(doc(t, c.createdBy, c.createdAt, c.docs[0]?.status || 'verified')); });
@@ -446,6 +449,19 @@ function seed() {
     if (c.decision) audit.push({ at: c.decision.date, by: c.assignee, caseId: c.id, text: c.decision.type === 'sanctioned' ? 'Bank sanctioned the loan' : 'Bank rejected the application' });
     if (c.disbursal) audit.push({ at: c.disbursal.date, by: c.assignee, caseId: c.id, text: 'Disbursal recorded' });
   });
+  // commission on the disbursed sample cases: one paid, one invoiced, one waiting to be invoiced
+  const invoices = [];
+  cases.filter((c) => c.disbursal).forEach((c) => {
+    const pid = masters.products.find((x) => x.name === c.product).id, bp = masters.bankProducts.find((x) => x.bankId === c.bankId && x.productId === pid);
+    const pr = masters.partners.find((x) => x.id === c.partnerId), base = c.disbursal.amount, rate = bp.payout;
+    c.commission = { rate, base, amount: Math.round((base * rate) / 100), partnerId: pr ? pr.id : null, partnerRate: pr ? pr.payout : 0, partnerAmount: pr ? Math.round((base * pr.payout) / 100) : 0, status: 'expected', partnerStatus: pr ? 'hold' : null, at: c.disbursal.date };
+  });
+  const mkInv = (no, c, date, receipt) => { const k = c.commission, gst = Math.round(k.amount * 0.18), inv = { id: 'i' + no.slice(-3), no, bankId: c.bankId, date, caseIds: [c.id], base: k.amount, gstRate: 18, gst, total: k.amount + gst, status: 'raised', by: 'u2' };
+    k.status = 'invoiced'; k.invoiceId = inv.id; audit.push({ at: date, by: 'u2', caseId: c.id, text: `Commission invoiced on ${no}` });
+    if (receipt) { const tds = Math.round(k.amount * 0.02); inv.receipt = { amount: inv.total - tds, tds, date: receipt, ref: 'UTR' + String(date).slice(-8), by: 'u2' }; inv.status = 'paid'; inv.shortBy = 0; k.received = inv.total - tds; k.tds = tds; k.status = 'received'; k.receivedAt = receipt; if (k.partnerStatus === 'hold') k.partnerStatus = 'due'; audit.push({ at: receipt, by: 'u2', caseId: c.id, text: `Bank payment recorded on ${no}` }); }
+    invoices.unshift(inv); };
+  mkInv('FS/INV/26-27/001', cases.find((c) => c.id === 'FS-2026-00095'), t - 55 * D, t - 40 * D);
+  mkInv('FS/INV/26-27/002', cases.find((c) => c.id === 'FS-2026-00109'), t - 2 * D, null);
   const notifications = [
     { id: 'n1', userId: 'u6', at: t - 5 * H, caseId: 'FS-2026-00102', text: 'New case in your queue: Sameer Kulkarni, Home Loan, Unity Housing Finance', read: false },
     { id: 'n2', userId: 'u8', at: t - 5 * H, caseId: 'FS-2026-00102', text: 'New case in your queue: Sameer Kulkarni, Home Loan, Unity Housing Finance', read: false },
@@ -453,9 +469,9 @@ function seed() {
     { id: 'n4', userId: 'u3', at: t - 4 * H, caseId: 'FS-2026-00111', text: 'Please confirm: Pooja Nair marked not eligible by Neha Joshi', read: false },
     { id: 'n5', userId: 'u4', at: t - 2 * D, caseId: 'FS-2026-00108', text: 'Sanctioned: Sneha Kulkarni, ₹6 lakh by Metro City Bank', read: true },
   ];
-  return { v: 2, me: 'u4', users, allocation, cases, audit, notifications, emails: [], seq: 112, masters, masterAccess: defaultAccess() };
+  return { v: 3, me: 'u4', users, allocation, cases, audit, notifications, emails: [], seq: 112, masters, masterAccess: defaultAccess(), invoices, invSeq: 2 };
 }
-function load() { try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 2) return s; } } catch (e) {} return seed(); }
+function load() { try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 3) return s; } } catch (e) {} return seed(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S, (k, v) => (k === 'preview' || k === 'scanning' ? undefined : v))); } catch (e) {} }
 S = load();
 const previews = {}; // uploaded image previews, kept in memory only
@@ -761,7 +777,10 @@ const ACT = {
       if (!+f.amount || !f.lan) return 'Amount and loan account number are required.';
       c.disbursal = { amount: +f.amount, date: Date.parse(f.date) || now(), lan: f.lan, mode: f.mode }; c.status = 'disbursed';
       log(c, `Disbursed ${amt(f.amount)}, loan account ${f.lan}`);
+      c.commission = makeCommission(c);
+      log(c, `Commission worked out: ${c.commission.rate}% of ${inr(c.commission.base)} = ${inr(c.commission.amount)}${c.commission.partnerId ? `; referral payout ${inr(c.commission.partnerAmount)}` : ''}`, 'system');
       notify([c.createdBy, c.assignee, ...managerIds(), ...adminIds()], `Disbursed: ${c.applicant.name}, ${amt(f.amount)}`, c, true);
+      notify(adminIds(), `Commission ${inr(c.commission.amount)} ready to invoice to ${bank(c.bankId).name} (${c.applicant.name})`, c);
     } });
   },
   withdraw(ds) { const c = getCase(ds.case); modal({ title: 'Withdraw case', body: '<label class="field">Reason<textarea name="reason" placeholder="For example: customer took a loan elsewhere"></textarea></label>', submit: 'Withdraw', danger: true, onSubmit(f) { if (!f.reason) return 'Give a reason.'; c.status = 'withdrawn'; c.withdrawReason = f.reason; log(c, `Withdrawn: ${f.reason}`); notify([c.createdBy, c.assignee, ...managerIds()], `Withdrawn: ${c.applicant.name}`, c); } }); },
@@ -813,6 +832,7 @@ const NAV = [
   ['masters', 'Masters', ['manager', 'admin', 'superadmin'], '<path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'],
   ['access', 'Master access', ['superadmin'], '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>'],
   ['emails', 'Emails sent', ['admin', 'superadmin'], '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>'],
+  ['commissions', 'Commissions', ['admin', 'superadmin'], '<path d="M7 5h10M7 9h10M7 5c6 0 6 8 0 8l7 7"/>'],
   ['audit', 'Audit log', ['manager', 'admin', 'superadmin'], '<path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/>'],
 ];
 const visibleCases = () => S.cases.filter((c) => canSee(c));
@@ -870,7 +890,7 @@ function viewDashboard() {
   const confirmNE = list.filter((c) => c.status === 'not-eligible' && !c.eligibility?.confirmed);
   const workload = S.users.filter((x) => x.role === 'backend').map((x) => [x, list.filter((c) => c.assignee === x.id && OPEN.includes(c.status)).length]);
   const bankRows = banks().map((b) => { const bc = list.filter((c) => c.bankId === b.id); return `<tr><td>${b.name}</td><td class="num">${bc.filter((c) => c.bank.ref).length}</td><td class="num">${bc.filter((c) => ['sanctioned', 'disbursed'].includes(c.status)).length}</td><td class="num">${bc.filter((c) => c.status === 'rejected').length}</td><td class="num">${amt(bc.filter((c) => c.disbursal).reduce((s, c) => s + c.disbursal.amount, 0))}</td></tr>`; }).join('');
-  return `${head}<div class="kpis"><a class="kpi" href="#cases"><b>${list.filter((c) => OPEN.includes(c.status)).length}</b><span>Open cases</span></a><a class="kpi ${unrouted.length ? 'kpi--bad' : ''}" href="#queue"><b>${unrouted.length}</b><span>Unrouted</span></a><div class="kpi ${confirmNE.length ? 'kpi--warn' : ''}"><b>${confirmNE.length}</b><span>Not-eligible to confirm</span></div><div class="kpi ${sla.length ? 'kpi--bad' : ''}"><b>${sla.length}</b><span>SLA alerts</span></div><div class="kpi"><b>${amt(disbMonth.reduce((s, c) => s + c.disbursal.amount, 0))}</b><span>Disbursed this month</span></div></div>
+  return `${head}<div class="kpis"><a class="kpi" href="#cases"><b>${list.filter((c) => OPEN.includes(c.status)).length}</b><span>Open cases</span></a><a class="kpi ${unrouted.length ? 'kpi--bad' : ''}" href="#queue"><b>${unrouted.length}</b><span>Unrouted</span></a><div class="kpi ${confirmNE.length ? 'kpi--warn' : ''}"><b>${confirmNE.length}</b><span>Not-eligible to confirm</span></div><div class="kpi ${sla.length ? 'kpi--bad' : ''}"><b>${sla.length}</b><span>SLA alerts</span></div><div class="kpi"><b>${amt(disbMonth.reduce((s, c) => s + c.disbursal.amount, 0))}</b><span>Disbursed this month</span></div>${canSeeMoney() ? `<a class="kpi" href="#commissions"><b>${inr(commCases().filter((c) => ['expected', 'invoiced'].includes(c.commission.status)).reduce((s, c) => s + c.commission.amount, 0))}</b><span>Commission not yet received</span></a>` : ''}</div>
     <div class="grid2"><div class="card"><div class="card__head"><h2>Pipeline by status</h2></div><div class="bar-list">${Object.keys(STATUS).map((s) => `<a class="bar-row" href="#cases"><span>${STATUS[s].label}</span><span class="bar"><i style="width:${(count([s]) / max) * 100}%;background:${STATUS[s].tone === 'good' ? 'var(--good)' : STATUS[s].tone === 'bad' ? 'var(--bad)' : STATUS[s].tone === 'warn' ? 'var(--warn)' : 'var(--brand)'}"></i></span><b class="num">${count([s])}</b></a>`).join('')}</div></div>
     <div class="card"><div class="card__head"><h2>Needs attention</h2></div>${[...confirmNE.map((c) => ({ c, what: 'Confirm not eligible: ' + c.eligibility.reason })), ...unrouted.map((c) => ({ c, what: 'No Backend Executive for ' + bank(c.bankId).name })), ...sla].length ? `<div style="display:grid;gap:8px">${[...confirmNE.map((c) => ({ c, what: 'Confirm not eligible: ' + c.eligibility.reason })), ...unrouted.map((c) => ({ c, what: 'No Backend Executive for ' + bank(c.bankId).name })), ...sla].slice(0, 8).map(({ c, what }) => `<a href="#case/${c.id}" class="req req--open" style="text-decoration:none;color:inherit"><b>${esc(c.applicant.name)} · ${c.id}</b><span class="small muted">${esc(what)}</span></a>`).join('')}</div>` : '<p class="empty">All on track.</p>'}</div></div>
     <div class="grid2"><div class="card"><div class="card__head"><h2>Workload by Backend Executive</h2></div><div class="bar-list">${workload.map(([x, n]) => `<div class="bar-row"><span>${x.name}${x.leave ? ' (on leave)' : ''}</span><span class="bar"><i style="width:${(n / Math.max(1, ...workload.map((w) => w[1]))) * 100}%"></i></span><b class="num">${n}</b></div>`).join('')}</div></div>
@@ -1010,6 +1030,7 @@ function tabBank(c) {
       ${emails.length ? `<div style="margin-top:12px;display:grid;gap:8px">${emails.map(({ e, i }) => `<button class="email" style="text-align:left;cursor:pointer" data-act="email" data-i="${i}"><b>Email to ${esc(e.to)}</b><span class="small muted">${esc(e.subject)}</span></button>`).join('')}</div>` : ''}</div>
     <div class="card"><h3 style="margin-bottom:12px">Decision and disbursal</h3>${d ? (d.type === 'sanctioned' ? `<dl class="kv"><dt>Decision</dt><dd>${chip('sanctioned')}</dd><dt>Amount</dt><dd>${amt(d.amount)}</dd><dt>Interest rate</dt><dd>${d.rate}% a year</dd><dt>Tenure</dt><dd>${d.tenure || '—'} years</dd><dt>Processing fee</dt><dd>${esc(d.fee || '—')}</dd><dt>Conditions</dt><dd>${esc(d.conditions || '—')}</dd><dt>Date</dt><dd>${day(d.date)}</dd><dt>Letter</dt><dd>${esc(d.letter || 'sanction_letter.pdf')}</dd></dl>` : `<dl class="kv"><dt>Decision</dt><dd>${chip('rejected')}</dd><dt>Reason</dt><dd>${esc(d.reason)}</dd><dt>Date</dt><dd>${day(d.date)}</dd></dl>`) : '<p class="muted">No decision yet.</p>'}
       ${x ? `<dl class="kv" style="margin-top:14px"><dt>Disbursed</dt><dd>${amt(x.amount)} (${esc(x.mode)})</dd><dt>Date</dt><dd>${day(x.date)}</dd><dt>Loan account</dt><dd class="num">${esc(x.lan)}</dd></dl>` : ''}</div></div>
+    ${canSeeMoney() ? commissionCard(c) : ''}
     <div class="card"><h3 style="margin-bottom:10px">Bank queries on this case</h3>${c.requests.filter((r) => r.kind === 'query').length ? c.requests.filter((r) => r.kind === 'query').map((r) => `<p class="small" style="padding:8px 0;border-top:1px solid var(--line)"><b>${day(r.createdAt)}</b> · ${esc(r.note)} <span class="chip ${r.status === 'done' ? 'chip--good' : 'chip--warn'}">${r.status === 'done' ? 'resolved' : r.status}</span></p>`).join('') : '<p class="muted small">None.</p>'}</div>`;
 }
 
@@ -1206,6 +1227,121 @@ function viewAccess() {
     <div class="note small">Critical masters change money, security or who can do what: users, referral partners and their payout, banks, loan products, bank products and payouts, system settings. By default Admins can only view them.</div>`;
 }
 
+/* =================== COMMISSION TRACKING =================== */
+const canSeeMoney = () => isRole('superadmin', 'admin');
+const fyOf = (t) => { const d = new Date(t), y = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1; return `${String(y).slice(2)}-${String(y + 1).slice(2)}`; };
+const fyStart = (t = now()) => { const d = new Date(t), y = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1; return new Date(y, 3, 1).getTime(); };
+const bankProductAny = (bankId, productName) => { const p = productByName(productName); return p ? M().bankProducts.find((bp) => bp.bankId === bankId && bp.productId === p.id) : null; };
+const partner = (id) => M().partners.find((x) => x.id === id);
+function makeCommission(c) {
+  const bp = bankProductAny(c.bankId, c.product), rate = +(bp?.payout) || 0, base = +c.disbursal.amount;
+  const p = partner(c.partnerId), prate = p ? +(p.payout) || 0 : 0;
+  return { rate, base, amount: Math.round((base * rate) / 100), partnerId: p ? p.id : null, partnerRate: prate, partnerAmount: Math.round((base * prate) / 100), status: 'expected', partnerStatus: p ? 'hold' : null, at: now() };
+}
+const COMM = { expected: ['Expected', 'info'], invoiced: ['Invoiced', 'warn'], received: ['Received', 'good'], short: ['Short paid', 'bad'] };
+const PAYOUT = { hold: ['Waiting for bank payment', ''], due: ['Due to partner', 'warn'], paid: ['Paid', 'good'] };
+const INV = { raised: ['Awaiting payment', 'warn'], paid: ['Paid', 'good'], short: ['Short paid', 'bad'] };
+const tchip = ([label, tone]) => `<span class="chip ${tone ? 'chip--' + tone : ''}">${label}</span>`;
+const invoice = (id) => S.invoices.find((x) => x.id === id);
+const commCases = () => S.cases.filter((c) => c.commission);
+
+function commissionCard(c) {
+  const k = c.commission; if (!k) return '';
+  const inv = k.invoiceId ? invoice(k.invoiceId) : null, p = partner(k.partnerId);
+  return `<div class="card"><div class="card__head"><h3>Commission</h3>${tchip(COMM[k.status])}</div><dl class="kv">
+    <dt>Disbursed amount</dt><dd>${inr(k.base)}</dd><dt>Payout rate</dt><dd>${k.rate}%${k.override ? ` <span class="tag">changed: ${esc(k.override)}</span>` : ' <span class="tag">from bank product</span>'}</dd>
+    <dt>Commission</dt><dd><b>${inr(k.amount)}</b> before GST</dd>
+    ${inv ? `<dt>Invoice</dt><dd><a href="#" data-act="viewInvoice" data-id="${inv.id}">${esc(inv.no)}</a> · ${day(inv.date)}</dd>` : ''}
+    ${k.received != null ? `<dt>Received</dt><dd>${inr(k.received)}${k.tds ? ` + TDS ${inr(k.tds)}` : ''}${k.shortBy ? ` <span style="color:var(--bad)">· short by ${inr(k.shortBy)}</span>` : ''}</dd>` : ''}
+    ${p ? `<dt>Referral partner</dt><dd>${esc(p.name)} · ${k.partnerRate}% = ${inr(k.partnerAmount)} ${tchip(PAYOUT[k.partnerStatus])}</dd>` : ''}
+    <dt>Net to Finsol</dt><dd><b>${inr(k.amount - (k.partnerAmount || 0))}</b></dd></dl>
+    <div class="actions" style="margin-top:12px">${isRole('superadmin') && k.status === 'expected' ? `<button class="btn btn--ghost btn--sm" data-act="overridePayout" data-case="${c.id}">Change payout rate</button>` : ''}<a class="btn btn--ghost btn--sm" href="#commissions">Open commissions</a></div></div>`;
+}
+
+Object.assign(ACT, {
+  overridePayout(ds) {
+    const c = getCase(ds.case), k = c.commission;
+    modal({ title: 'Change payout rate for this case', body: `<p class="muted small">Bank product rate is ${bankProductAny(c.bankId, c.product)?.payout ?? '—'}%. Use this for a special rate agreed with the bank on this file.</p><div class="form-grid"><label class="field">Payout rate (%)<input name="rate" type="number" step="any" value="${k.rate}"></label><label class="field">Reason<input name="reason" placeholder="For example: festive scheme"></label></div>`, submit: 'Update commission', onSubmit(f) {
+      if (f.rate === '' || +f.rate < 0) return 'Enter a valid rate.'; if (!f.reason) return 'Give a reason.';
+      const old = k.rate; k.rate = +f.rate; k.amount = Math.round((k.base * k.rate) / 100); k.override = f.reason;
+      log(c, `Payout rate changed ${old}% → ${k.rate}% (${f.reason}); commission now ${inr(k.amount)}`);
+    } });
+  },
+  raiseInvoice(ds) {
+    const b = bank(ds.bank), list = commCases().filter((c) => c.bankId === b.id && c.commission.status === 'expected');
+    const st = M().settings, gst = +st.gstRate || 0, no = `${st.invoicePrefix}/${fyOf(now())}/${String((S.invSeq || 0) + 1).padStart(3, '0')}`;
+    modal({ title: `Raise invoice to ${b.name}`, wide: true, body: `<div class="form-grid"><label class="field">Invoice number<input name="no" value="${esc(no)}"></label><label class="field">Invoice date<input type="date" name="date" value="${dueIn(0)}"></label></div>
+      <div class="table-wrap"><table class="tbl"><thead><tr><th></th><th>Case</th><th>Customer</th><th>Disbursed</th><th>Rate</th><th>Commission</th></tr></thead><tbody>${list.map((c) => `<tr><td><input type="checkbox" name="cases" value="${c.id}" checked aria-label="Include ${c.id}"></td><td>${c.id}</td><td>${esc(c.applicant.name)}</td><td class="num">${amt(c.commission.base)}</td><td class="num">${c.commission.rate}%</td><td class="num">${inr(c.commission.amount)}</td></tr>`).join('')}</tbody></table></div>
+      <p class="small muted">GST at ${gst}% is added to the invoice (rate from System settings). Bank's DSA code: <b>${esc(b.dsaCode || '—')}</b> · payout cycle: ${esc(b.payoutCycle || '—')}.</p>`, submit: 'Raise invoice', onSubmit(f) {
+      const ids = f._all('cases'); if (!ids.length) return 'Tick at least one case.'; if (!f.no) return 'Invoice number is required.';
+      if (S.invoices.some((x) => x.no === f.no.trim())) return 'This invoice number is already used.';
+      const cs = ids.map(getCase), base = cs.reduce((s, c) => s + c.commission.amount, 0), gstAmt = Math.round((base * gst) / 100);
+      const inv = { id: 'i' + Math.random().toString(36).slice(2, 8), no: f.no.trim(), bankId: b.id, date: Date.parse(f.date) || now(), caseIds: ids, base, gstRate: gst, gst: gstAmt, total: base + gstAmt, status: 'raised', by: S.me };
+      S.invoices.unshift(inv); S.invSeq = (S.invSeq || 0) + 1;
+      cs.forEach((c) => { c.commission.status = 'invoiced'; c.commission.invoiceId = inv.id; log(c, `Commission invoiced on ${inv.no}`); });
+      log(null, `Invoice ${inv.no} raised to ${b.name}: ${ids.length} case(s), ${inr(inv.total)} including GST`);
+      toast(`Invoice ${inv.no} raised`);
+    } });
+  },
+  recordReceipt(ds) {
+    const inv = invoice(ds.id), b = bank(inv.bankId);
+    modal({ title: `Record payment for ${inv.no}`, body: `<div class="note small">Invoice total <b>${inr(inv.total)}</b> (commission ${inr(inv.base)} + GST ${inr(inv.gst)}) from ${esc(b.name)}.</div><div class="form-grid"><label class="field">Amount received in bank (₹)<input name="amount" type="number" step="any" value="${inv.total}"></label><label class="field">TDS deducted by the bank (₹)<input name="tds" type="number" step="any" value="0"></label><label class="field">Date received<input type="date" name="date" value="${dueIn(0)}"></label><label class="field">Payment reference (UTR)<input name="ref"></label></div><p class="small muted">Amount received plus TDS is compared with the invoice total. Anything less is marked short paid so it can be followed up with the bank.</p>`, submit: 'Save payment', onSubmit(f) {
+      if (!(+f.amount > 0)) return 'Enter the amount received.'; if (!f.ref) return 'Enter the payment reference.';
+      const settled = +f.amount + (+f.tds || 0), short = Math.max(0, Math.round(inv.total - settled));
+      inv.receipt = { amount: +f.amount, tds: +f.tds || 0, date: Date.parse(f.date) || now(), ref: f.ref, by: S.me }; inv.status = short > 1 ? 'short' : 'paid'; inv.shortBy = short > 1 ? short : 0;
+      const share = settled / inv.total;
+      inv.caseIds.map(getCase).filter(Boolean).forEach((c) => {
+        const k = c.commission, part = (k.amount * (1 + inv.gstRate / 100));
+        k.received = Math.round(part * (+f.amount / inv.total)); k.tds = Math.round(part * ((+f.tds || 0) / inv.total)); k.shortBy = inv.shortBy ? Math.round(part * (1 - share)) : 0;
+        k.status = inv.shortBy ? 'short' : 'received'; k.receivedAt = inv.receipt.date;
+        if (k.partnerStatus === 'hold') k.partnerStatus = 'due';
+        log(c, `Bank payment recorded on ${inv.no}${inv.shortBy ? ', short paid' : ''}`);
+      });
+      log(null, `Payment of ${inr(+f.amount)} (TDS ${inr(+f.tds || 0)}) recorded for ${inv.no}, ref ${f.ref}${inv.shortBy ? `; short by ${inr(inv.shortBy)}` : ''}`);
+      notify(adminIds(), `${b.name} paid ${inr(+f.amount)} on ${inv.no}${inv.shortBy ? `; short by ${inr(inv.shortBy)}` : ''}`, null);
+      toast(inv.shortBy ? `Marked short paid by ${inr(inv.shortBy)}` : 'Invoice marked paid');
+    } });
+  },
+  payPartner(ds) {
+    const c = getCase(ds.case), k = c.commission, p = partner(k.partnerId);
+    modal({ title: `Pay ${esc(p.name)}`, body: `<div class="note small">${k.partnerRate}% of ${inr(k.base)} on ${c.id} (${esc(c.applicant.name)}) = <b>${inr(k.partnerAmount)}</b>. Account ${esc(p.account || '—')}.</div><div class="form-grid"><label class="field">Date paid<input type="date" name="date" value="${dueIn(0)}"></label><label class="field">Payment reference<input name="ref"></label></div>`, submit: 'Mark paid', onSubmit(f) {
+      if (!f.ref) return 'Enter the payment reference.';
+      k.partnerStatus = 'paid'; k.partnerPaidAt = Date.parse(f.date) || now(); k.partnerRef = f.ref;
+      log(c, `Referral payout ${inr(k.partnerAmount)} paid to ${p.name}, ref ${f.ref}`);
+    } });
+  },
+  viewInvoice(ds) {
+    const inv = invoice(ds.id), b = bank(inv.bankId), r = inv.receipt;
+    modal({ title: `Invoice ${esc(inv.no)}`, submit: '', wide: true, body: `<div class="meta-row"><span>To <b>${esc(b.name)}</b></span><span>DSA code <b>${esc(b.dsaCode || '—')}</b></span><span>Date <b>${day(inv.date)}</b></span>${tchip(INV[inv.status])}</div>
+      <div class="table-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Customer</th><th>Loan account</th><th>Disbursed</th><th>Rate</th><th>Commission</th></tr></thead><tbody>${inv.caseIds.map(getCase).filter(Boolean).map((c) => `<tr><td><a href="#case/${c.id}">${c.id}</a></td><td>${esc(c.applicant.name)}</td><td class="num">${esc(c.disbursal?.lan || '')}</td><td class="num">${amt(c.commission.base)}</td><td class="num">${c.commission.rate}%</td><td class="num">${inr(c.commission.amount)}</td></tr>`).join('')}</tbody></table></div>
+      <dl class="kv"><dt>Commission</dt><dd>${inr(inv.base)}</dd><dt>GST ${inv.gstRate}%</dt><dd>${inr(inv.gst)}</dd><dt>Invoice total</dt><dd><b>${inr(inv.total)}</b></dd>${r ? `<dt>Received</dt><dd>${inr(r.amount)} on ${day(r.date)}, ref ${esc(r.ref)}</dd><dt>TDS deducted</dt><dd>${inr(r.tds)}</dd>${inv.shortBy ? `<dt>Short by</dt><dd style="color:var(--bad)">${inr(inv.shortBy)}</dd>` : ''}` : ''}</dl>` });
+  },
+});
+
+let cfilter = { status: '', bank: '' };
+function viewCommissions() {
+  if (!canSeeMoney()) return '<div class="card"><p class="empty">Only Admins and the Super Admin can see commissions.</p></div>';
+  const all = commCases(), sum = (arr, f) => arr.reduce((s, x) => s + (f(x) || 0), 0);
+  const expected = all.filter((c) => c.commission.status === 'expected');
+  const openInv = S.invoices.filter((i) => i.status === 'raised');
+  const recent = S.invoices.filter((i) => i.receipt && now() - i.receipt.date <= 30 * D);
+  const shortInv = S.invoices.filter((i) => i.status === 'short');
+  const due = all.filter((c) => c.commission.partnerStatus === 'due');
+  const fyCases = all.filter((c) => c.disbursal.date >= fyStart());
+  const byBank = M().banks.map((b) => { const bc = fyCases.filter((c) => c.bankId === b.id); return { b, n: bc.length, disb: sum(bc, (c) => c.commission.base), comm: sum(bc, (c) => c.commission.amount), rec: sum(bc, (c) => c.commission.received), part: sum(bc, (c) => c.commission.partnerAmount) }; }).filter((x) => x.n);
+  const ready = M().banks.map((b) => ({ b, list: expected.filter((c) => c.bankId === b.id) })).filter((x) => x.list.length);
+  let rows = all.sort((a, b) => b.disbursal.date - a.disbursal.date);
+  if (cfilter.status) rows = rows.filter((c) => c.commission.status === cfilter.status);
+  if (cfilter.bank) rows = rows.filter((c) => c.bankId === cfilter.bank);
+  return `<div class="page-head"><div><h1>Commissions</h1><p class="muted">Commission is worked out automatically when a disbursal is recorded: disbursed amount × the bank product's payout rate. Financial year ${fyOf(now())}.</p></div></div>
+    <div class="kpis"><div class="kpi"><b>${inr(sum(expected, (c) => c.commission.amount))}</b><span>Earned, not yet invoiced (${expected.length})</span></div><div class="kpi ${openInv.length ? 'kpi--warn' : ''}"><b>${inr(sum(openInv, (i) => i.total))}</b><span>Invoiced, awaiting payment (${openInv.length})</span></div><div class="kpi"><b>${inr(sum(recent, (i) => i.receipt.amount))}</b><span>Received in the last 30 days</span></div><div class="kpi ${shortInv.length ? 'kpi--bad' : ''}"><b>${inr(sum(shortInv, (i) => i.shortBy))}</b><span>Short paid by banks</span></div><div class="kpi ${due.length ? 'kpi--warn' : ''}"><b>${inr(sum(due, (c) => c.commission.partnerAmount))}</b><span>Referral payouts due (${due.length})</span></div><div class="kpi"><b>${inr(sum(fyCases, (c) => c.commission.amount - (c.commission.partnerAmount || 0)))}</b><span>Net commission this year, after referral payouts</span></div></div>
+    <div class="grid2"><div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>Ready to invoice</h2></div>${ready.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Bank</th><th>Payout cycle</th><th>Cases</th><th>Commission</th><th></th></tr></thead><tbody>${ready.map(({ b, list }) => `<tr><td>${esc(b.name)}</td><td>${esc(b.payoutCycle || '—')}</td><td class="num">${list.length}</td><td class="num">${inr(sum(list, (c) => c.commission.amount))}</td><td><button class="btn btn--primary btn--sm" data-act="raiseInvoice" data-bank="${b.id}">Raise invoice</button></td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Nothing waiting to be invoiced.</p>'}</div>
+    <div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>Referral payouts</h2></div>${all.filter((c) => c.commission.partnerId).length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Partner</th><th>Case</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${all.filter((c) => c.commission.partnerId).map((c) => `<tr><td>${esc(partner(c.commission.partnerId)?.name || '')}</td><td><a href="#case/${c.id}">${c.id}</a></td><td class="num">${inr(c.commission.partnerAmount)} <span class="tiny muted">(${c.commission.partnerRate}%)</span></td><td>${tchip(PAYOUT[c.commission.partnerStatus])}</td><td>${c.commission.partnerStatus === 'due' ? `<button class="btn btn--brand btn--sm" data-act="payPartner" data-case="${c.id}">Mark paid</button>` : c.commission.partnerRef ? `<span class="tiny muted">${esc(c.commission.partnerRef)}</span>` : ''}</td></tr>`).join('')}</tbody></table></div><p class="tiny muted" style="padding:0 18px 14px">A partner's payout becomes due once the bank has paid Finsol for that case.</p>` : '<p class="empty">No referral partners on disbursed cases.</p>'}</div></div>
+    <div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>Invoices to banks</h2></div>${S.invoices.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Invoice</th><th>Bank</th><th>Date</th><th>Cases</th><th>Commission</th><th>GST</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>${S.invoices.map((i) => `<tr><td><a href="#" data-act="viewInvoice" data-id="${i.id}"><b>${esc(i.no)}</b></a></td><td>${esc(bank(i.bankId).name)}</td><td>${day(i.date)}</td><td class="num">${i.caseIds.length}</td><td class="num">${inr(i.base)}</td><td class="num">${inr(i.gst)}</td><td class="num"><b>${inr(i.total)}</b></td><td>${tchip(INV[i.status])}${i.shortBy ? ` <span class="tiny" style="color:var(--bad)">by ${inr(i.shortBy)}</span>` : ''}</td><td>${i.status === 'raised' ? `<button class="btn btn--brand btn--sm" data-act="recordReceipt" data-id="${i.id}">Record payment</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">No invoices yet.</p>'}</div>
+    <div class="card card--flush"><div class="card__head" style="padding:16px 18px 0;align-items:end"><h2>Commission by case</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><select id="cfs" aria-label="Status" style="padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface)"><option value="">All statuses</option>${Object.entries(COMM).map(([k, [l]]) => `<option value="${k}" ${cfilter.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select><select id="cfb" aria-label="Bank" style="padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface)"><option value="">All banks</option>${M().banks.map((b) => `<option value="${b.id}" ${cfilter.bank === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select></div></div>${rows.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Customer</th><th>Bank</th><th>Product</th><th>Disbursed</th><th>Date</th><th>Rate</th><th>Commission</th><th>Referral</th><th>Net</th><th>Status</th></tr></thead><tbody>${rows.map((c) => { const k = c.commission; return `<tr class="link" data-href="#case/${c.id}"><td><b>${c.id}</b></td><td>${esc(c.applicant.name)}</td><td>${esc(bank(c.bankId).name)}</td><td>${c.product}</td><td class="num">${amt(k.base)}</td><td>${day(c.disbursal.date)}</td><td class="num">${k.rate}%${k.override ? '*' : ''}</td><td class="num">${inr(k.amount)}</td><td class="num">${k.partnerAmount ? inr(k.partnerAmount) : '—'}</td><td class="num"><b>${inr(k.amount - (k.partnerAmount || 0))}</b></td><td>${tchip(COMM[k.status])}</td></tr>`; }).join('')}</tbody></table></div><p class="tiny muted" style="padding:0 18px 14px">* payout rate changed on that case by the Super Admin.</p>` : '<p class="empty">No disbursed cases match.</p>'}</div>
+    <div class="card card--flush"><div class="card__head" style="padding:16px 18px 0"><h2>By bank, this financial year</h2></div>${byBank.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Bank</th><th>Disbursals</th><th>Amount disbursed</th><th>Commission</th><th>Received incl. GST</th><th>Referral payouts</th></tr></thead><tbody>${byBank.map((x) => `<tr><td>${esc(x.b.name)}</td><td class="num">${x.n}</td><td class="num">${amt(x.disb)}</td><td class="num">${inr(x.comm)}</td><td class="num">${inr(x.rec)}</td><td class="num">${inr(x.part)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">No disbursals this year.</p>'}</div>`;
+}
+
 /* =================== NOTIFICATIONS DRAWER =================== */
 function openDrawer() {
   const list = S.notifications.filter((n) => n.userId === S.me);
@@ -1222,7 +1358,7 @@ function render() {
   if (route === 'case') html = viewCase(arg);
   else if (route === 'master') html = viewMaster(arg);
   else if (allowed && !allowed.includes(me().role)) html = `<div class="card"><p class="empty">${ROLES[me().role]} cannot open this page.</p></div>`;
-  else html = ({ dashboard: viewDashboard, cases: viewCases, queue: viewQueue, tasks: viewTasks, allocation: viewAllocation, team: viewTeam, masters: viewMasters, access: viewAccess, emails: viewEmails, audit: viewAudit }[route] || viewDashboard)();
+  else html = ({ dashboard: viewDashboard, cases: viewCases, queue: viewQueue, tasks: viewTasks, allocation: viewAllocation, team: viewTeam, masters: viewMasters, access: viewAccess, commissions: viewCommissions, emails: viewEmails, audit: viewAudit }[route] || viewDashboard)();
   $('#view').innerHTML = html;
   renderSide();
   $('#viewAs').innerHTML = S.users.filter((u) => u.active !== false || u.id === S.me).map((u) => `<option value="${u.id}" ${u.id === S.me ? 'selected' : ''}>${u.name} · ${ROLES[u.role]}${u.label ? ' (' + u.label + ')' : ''}</option>`).join('');
@@ -1230,6 +1366,8 @@ function render() {
   $('#bellDot').hidden = !unread; $('#bellDot').textContent = unread;
   const fq = $('#fq'); if (fq) { fq.addEventListener('input', () => { filter.q = fq.value; const pos = fq.selectionStart; render(); const n = $('#fq'); n.focus(); n.setSelectionRange(pos, pos); }); }
   const mq = $('#mq'); if (mq) { mq.addEventListener('input', () => { mfilter = mq.value; const pos = mq.selectionStart; render(); const n = $('#mq'); n.focus(); n.setSelectionRange(pos, pos); }); }
+  $('#cfs')?.addEventListener('change', (e) => { cfilter.status = e.target.value; render(); });
+  $('#cfb')?.addEventListener('change', (e) => { cfilter.bank = e.target.value; render(); });
   $('#fs')?.addEventListener('change', (e) => { filter.status = e.target.value; render(); });
   $('#fb')?.addEventListener('change', (e) => { filter.bank = e.target.value; render(); });
 }
