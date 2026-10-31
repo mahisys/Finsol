@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0f1b47">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%231b2d6b'/%3E%3Cpath d='M13 29V12h15M13 20h11' stroke='%23ff9f1c' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
-<!-- UAT build 2026-10-31 06:14 UTC -->
+<!-- UAT build 2026-10-31 06:50 UTC -->
 <title>Finsol Loans</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -529,19 +529,20 @@ const ICONS = {
 };
 const icon = (name, size = 22, sw = 1.9) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
 
-/* ===================== PHOTOS (free Unsplash photos, loaded from Unsplash) =====================
+/* ===================== PHOTOS (free Unsplash photos, served by Unsplash's image CDN) =====================
    Each photo sits on top of its illustration. If a photo cannot load, the illustration shows instead. */
 const PHOTOS = {
-  personal: { id: '3jFGJZDDFkk', alt: 'A young woman talking on her phone', page: 'https://unsplash.com/photos/a-woman-in-a-blue-jacket-talking-on-a-cell-phone-3jFGJZDDFkk' },
-  business: { id: 'vLDgfnFj4_A', alt: 'A neighbourhood store with crates of fruit and vegetables', page: 'https://unsplash.com/photos/a-store-with-crates-of-fruit-and-vegetables-in-front-of-it-vLDgfnFj4_A' },
-  home: { id: 'Ebj87ehFNNU', alt: 'A hand holding the keys to a new house', page: 'https://unsplash.com/photos/a-person-holding-a-bunch-of-keys-in-their-hand-Ebj87ehFNNU' },
-  property: { id: 'A2QSrpZpQKk', alt: 'Aerial view of a city with tall residential buildings', page: 'https://unsplash.com/photos/an-aerial-view-of-a-city-with-tall-buildings-A2QSrpZpQKk' },
-  cash: { id: 'CpIWRMy0jkg', alt: 'Rows of shelves stacked with boxes in a warehouse', page: 'https://unsplash.com/photos/rows-of-shelves-stacked-with-boxes-in-a-warehouse-CpIWRMy0jkg' },
-  team: { id: 'nFLmPAf9dVc', alt: 'People working on computers in an office', page: 'https://unsplash.com/photos/unknown-persons-using-computer-indoors-nFLmPAf9dVc' },
+  personal: { id: '1556742049-0cfed4f6a45d', alt: 'A customer paying with her phone at a shop counter' },
+  business: { id: '1441986300917-64674bd600d8', alt: 'Inside a retail clothing store' },
+  home: { id: '1560518883-ce09059eeffa', alt: 'House keys beside a model home' },
+  property: { id: '1582407947304-fd86f028f716', alt: 'Commercial and residential towers' },
+  cash: { id: '1586528116311-ad8dd3c8310d', alt: 'A warehouse stocked with goods on racks' },
+  team: { id: '1551836022-d5d88e9218df', alt: 'An advisor meeting a client at a laptop' },
 };
 const photoImg = (key, w, credit = false) => {
   const ph = PHOTOS[key]; if (!ph) return '';
-  return `<img class="photo" src="https://unsplash.com/photos/${ph.id}/download?w=${w}" alt="${ph.alt}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.parentNode.classList.add('loaded')" onerror="this.remove()">${credit ? `<a class="photo-credit" href="${ph.page}" target="_blank" rel="noopener">Photo: Unsplash</a>` : ''}`;
+  const src = (width) => `https://images.unsplash.com/photo-${ph.id}?w=${width}&q=70&auto=format&fit=crop`;
+  return `<img class="photo" src="${src(w)}" srcset="${src(Math.round(w / 2))} ${Math.round(w / 2)}w, ${src(w)} ${w}w" sizes="(max-width: 700px) 100vw, ${Math.round(w * 0.75)}px" alt="${ph.alt}" loading="lazy" decoding="async" onload="this.parentNode.classList.add('loaded')" onerror="this.remove()">${credit ? '<a class="photo-credit" href="https://unsplash.com" target="_blank" rel="noopener">Photo: Unsplash</a>' : ''}`;
 };
 const withPhoto = (key, illustration, w, cls = '', credit = false) => `<div class="ph ${cls}">${illustration}${photoImg(key, w, credit)}</div>`;
 
@@ -800,7 +801,7 @@ function countUp(root) {
 
 /* ===================== NAV ===================== */
 $('#mega').innerHTML = PRODUCTS.map((p) => `<a href="#${p.id}"><span class="choice__ico">${icon(p.icon, 20)}</span><span><b>${p.name}</b><small>Interest from ${p.from} a year</small></span></a>`).join('');
-$('#photoCredits').innerHTML = Object.values(PHOTOS).map((ph) => `<a href="${ph.page}" target="_blank" rel="noopener">${ph.alt.toLowerCase()}</a>`).join(', ');
+$('#photoCredits').textContent = Object.values(PHOTOS).map((ph) => ph.alt.toLowerCase()).join(', ') + '.';
 $('#footLoans').innerHTML = PRODUCTS.map((p) => `<li><a href="#${p.id}">${p.name}</a></li>`).join('');
 const loansBtn = $('#loansBtn');
 const setMega = (open) => { $('#mega').hidden = !open; loansBtn.setAttribute('aria-expanded', open); };
